@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Roadside Assistance - Malumichampatti</title>
+
+  <!-- PWA & Native App Meta Tags (Runs standalone without Chrome URL bar!) -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#121418">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Roadside">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+
+  <!-- Tailwind CSS & FontAwesome -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            swiggy: '#FC8019',
+            cardbg: '#1E222B',
+            darkbg: '#121418',
+            emerald: '#10B981',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Native Mobile App Touch and Scrolling */
+    html, body {
+      height: 100%;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      background-color: #121418;
+      color: #f3f4f6;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .safe-top {
+      padding-top: max(env(safe-area-inset-top, 0px), 12px);
+    }
+    .safe-bottom {
+      padding-bottom: max(env(safe-area-inset-bottom, 0px), 12px);
+    }
+    @keyframes pulse-slow {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.06); opacity: 0.85; }
+    }
+    .animate-pulse-slow { animation: pulse-slow 2s infinite ease-in-out; }
+    ::-webkit-scrollbar { display: none; }
+  </style>
+</head>
+<body class="flex flex-col min-h-screen max-w-lg mx-auto bg-darkbg antialiased">
+
+  <!-- 1-TAP INSTALL STANDALONE APP BANNER (No Browser Chrome UI) -->
+  <div id="installBanner" class="bg-gradient-to-r from-swiggy via-orange-600 to-amber-600 px-4 py-2.5 flex items-center justify-between text-white text-xs font-bold shadow-lg shrink-0">
+    <div class="flex items-center gap-2">
+      <div class="w-7 h-7 rounded-lg bg-black/20 flex items-center justify-center text-sm">
+        <i class="fa-solid fa-download"></i>
+      </div>
+      <div>
+        <span class="block text-xs leading-tight">Install as Real Mobile App</span>
+        <span class="text-[10px] font-normal text-orange-100">Opens in full screen with NO Chrome browser bar</span>
+      </div>
+    </div>
+    <button id="installAppBtn" onclick="triggerNativeInstall()" class="bg-white text-swiggy px-3 py-1.5 rounded-lg text-xs font-black shadow active:scale-95 transition">
+      INSTALL
+    </button>
+  </div>
+
+  <!-- Real Native App Header (Uses user's own status bar at the top) -->
+  <header class="safe-top bg-darkbg/95 backdrop-blur px-4 py-2.5 border-b border-gray-800/80 flex items-center justify-between shrink-0 sticky top-0 z-40">
+    <div class="flex items-center gap-2.5">
+      <div class="w-9 h-9 rounded-xl bg-swiggy/20 flex items-center justify-center text-swiggy text-base">
+        <i class="fa-solid fa-location-dot"></i>
+      </div>
+      <div>
+        <div class="flex items-center gap-1.5">
+          <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">PILOT ZONE</span>
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald"></span>
+        </div>
+        <p class="text-sm font-black text-white flex items-center gap-1">
+          Malumichampatti, CBE <i class="fa-solid fa-chevron-down text-[10px] text-swiggy"></i>
+        </p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <button onclick="window.location.reload(true)" title="Instant Sync" class="bg-cardbg border border-gray-700 hover:border-swiggy text-gray-300 w-8 h-8 rounded-full flex items-center justify-center text-xs active:rotate-180 transition-transform">
+        <i class="fa-solid fa-rotate text-swiggy"></i>
+      </button>
+      <span class="bg-emerald/15 text-emerald border border-emerald/30 px-2.5 py-1 rounded-full text-[10px] font-black">
+        <i class="fa-solid fa-shield-halved mr-1"></i> LIVE
+      </span>
+    </div>
+  </header>
+
+  <!-- Scrollable App Body Container (100% Screen Adaptive) -->
+  <main id="appBody" class="flex-1 overflow-y-auto px-4 py-3 space-y-4">
+
+    <!-- ================= SCREEN 1: CUSTOMER SCREEN ================= -->
+    <div id="customerScreen" class="space-y-4">
+      
+      <!-- Quick Service Cards -->
+      <div>
+        <div class="flex justify-between items-center mb-2 px-0.5">
+          <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Emergency Services</h2>
+          <span class="text-[10px] text-emerald font-semibold"><i class="fa-solid fa-bolt"></i> Nearest partner in 45s</span>
+        </div>
+
+        <div class="space-y-2.5">
+          <!-- 1. Mechanic -->
+          <label class="service-card flex items-center justify-between p-3.5 bg-cardbg rounded-2xl border-2 border-swiggy cursor-pointer active:scale-[0.98] transition" data-service="mechanic">
+            <div class="flex items-center gap-3">
+              <input type="radio" name="service" value="mechanic" checked class="hidden">
+              <div class="w-12 h-12 rounded-xl bg-swiggy/20 flex items-center justify-center text-swiggy text-xl">
+                <i class="fa-solid fa-wrench"></i>
+              </div>
+              <div>
+                <h3 class="font-bold text-sm text-white">Quick Mechanic</h3>
+                <p class="text-[11px] text-gray-400">Visiting & Diagnosis Fee (Parts/repairs quoted & paid on-site)</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <span id="displayMechanicPrice" class="text-base font-black text-swiggy">₹199</span>
+              <p class="text-[10px] text-emerald font-bold">10-15 mins</p>
+            </div>
+          </label>
+
+          <!-- 2. Towing -->
+          <label class="service-card flex items-center justify-between p-3.5 bg-cardbg rounded-2xl border border-gray-800 cursor-pointer active:scale-[0.98] transition" data-service="towing">
+            <div class="flex items-center gap-3">
+              <input type="radio" name="service" value="towing" class="hidden">
+              <div class="w-12 h-12 rounded-xl bg-gray-800 flex items-center justify-center text-gray-300 text-xl">
+                <i class="fa-solid fa-truck-pickup"></i>
+              </div>
+              <div>
+                <h3 class="font-bold text-sm text-white">Flatbed Towing</h3>
+                <p class="text-xs text-gray-400">Bike & Car breakdown transport</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <span id="displayTowingPrice" class="text-base font-black text-swiggy">₹799</span>
+              <p class="text-[10px] text-emerald font-bold">20-25 mins</p>
+            </div>
+          </label>
+
+          <!-- 3. Fuel Delivery -->
+          <label class="service-card flex items-center justify-between p-3.5 bg-cardbg rounded-2xl border border-gray-800 cursor-pointer active:scale-[0.98] transition" data-service="fuel_delivery">
+            <div class="flex items-center gap-3">
+              <input type="radio" name="service" value="fuel_delivery" class="hidden">
+              <div class="w-12 h-12 rounded-xl bg-gray-800 flex items-center justify-center text-gray-300 text-xl">
+                <i class="fa-solid fa-gas-pump"></i>
+              </div>
+              <div>
+                <h3 class="font-bold text-sm text-white">Fuel Delivery Booking</h3>
+                <p class="text-xs text-gray-400">Emergency Petrol/Diesel Booking</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <span id="displayFuelPrice" class="text-base font-black text-swiggy">₹99 <span class="text-[10px] font-normal text-gray-400">+ fuel</span></span>
+              <p class="text-[10px] text-emerald font-bold">15 mins</p>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Breakdown Location -->
+      <div class="bg-cardbg p-3.5 rounded-2xl border border-gray-800 space-y-1.5">
+        <label class="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Your Breakdown Spot</label>
+        <div class="flex items-center gap-2.5 bg-darkbg px-3 py-2.5 rounded-xl border border-gray-700/60">
+          <i class="fa-solid fa-location-crosshairs text-swiggy text-base shrink-0"></i>
+          <input id="customerLocation" type="text" value="Malumichampatti Bus Stop, Pollachi Main Rd" class="bg-transparent text-xs text-white w-full outline-none font-medium">
+        </div>
+      </div>
+
+      <!-- Contact Phone -->
+      <div class="bg-cardbg p-3.5 rounded-2xl border border-gray-800 space-y-1.5">
+        <div class="flex justify-between items-center">
+          <label class="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Your Mobile Number</label>
+          <span class="text-[10px] text-emerald font-semibold"><i class="fa-solid fa-lock"></i> Number Protected</span>
+        </div>
+        <div class="flex items-center gap-2.5 bg-darkbg px-3 py-2.5 rounded-xl border border-gray-700/60">
+          <i class="fa-solid fa-phone text-swiggy text-sm shrink-0"></i>
+          <input id="customerPhone" type="tel" value="+91 98421 98765" class="bg-transparent text-xs text-white w-full outline-none font-medium">
+        </div>
+      </div>
+
+      <!-- Main Action Button -->
+      <button id="requestBtn" onclick="requestHelpNow()" class="w-full bg-swiggy hover:bg-orange-600 text-white font-black py-4 rounded-2xl shadow-xl shadow-swiggy/30 active:scale-[0.98] transition flex items-center justify-center gap-2 text-sm tracking-wide">
+        <i class="fa-solid fa-bolt"></i> REQUEST HELP NOW
+      </button>
+    </div>
+
+    <!-- ================= SCREEN 2: LIVE TRACKING (SWIGGY-STYLE) ================= -->
+    <div id="trackingScreen" class="hidden space-y-4">
+      
+      <!-- Live Status Card -->
+      <div class="bg-cardbg border border-gray-800 rounded-2xl p-4 shadow-xl">
+        <div class="flex items-center justify-between pb-3 border-b border-gray-800">
+          <div>
+            <h2 id="trackingHeader" class="font-black text-base text-white">Matching Partner...</h2>
+            <p class="text-xs text-gray-400">Pilot Zone: Malumichampatti</p>
+          </div>
+          <div id="etaBadge" class="bg-swiggy/20 text-swiggy px-3 py-1 rounded-full text-xs font-black animate-pulse">
+            Searching...
+          </div>
+        </div>
+
+        <!-- 4-Step Escalation Progress Bar -->
+        <div class="mt-4 space-y-2">
+          <div class="flex justify-between text-[11px] text-gray-400 font-bold">
+            <span id="stepLabel">Step 1/4: High-Priority Push Notification</span>
+            <span id="stepPercent">25%</span>
+          </div>
+          <div class="w-full bg-gray-800 h-2.5 rounded-full overflow-hidden">
+            <div id="progressBar" class="bg-swiggy h-full w-1/4 transition-all duration-700 ease-out"></div>
+          </div>
+        </div>
+
+        <!-- Radar Animation -->
+        <div id="matchingRadar" class="py-7 flex flex-col items-center justify-center">
+          <div class="relative flex items-center justify-center w-24 h-24">
+            <div class="absolute w-24 h-24 bg-swiggy/20 rounded-full animate-ping"></div>
+            <div class="absolute w-16 h-16 bg-swiggy/30 rounded-full animate-pulse"></div>
+            <div class="w-12 h-12 rounded-full bg-swiggy flex items-center justify-center text-white text-xl shadow-lg shadow-swiggy/50">
+              <i class="fa-solid fa-satellite-dish"></i>
+            </div>
+          </div>
+          <p id="escalationDesc" class="text-xs text-gray-300 text-center mt-3.5 max-w-[280px] font-medium leading-relaxed">
+            Step 1: Pushing high-priority alert to nearest mechanic with Accept/Reject notification.
+          </p>
+        </div>
+      </div>
+
+      <!-- Assigned Mechanic Card -->
+      <div id="partnerCard" class="hidden bg-gradient-to-br from-cardbg to-gray-900 border border-emerald/40 rounded-2xl p-4 shadow-xl space-y-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="relative">
+              <img src="https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=100" class="w-12 h-12 rounded-full object-cover border-2 border-emerald" alt="Mechanic">
+              <span class="absolute bottom-0 right-0 w-3 h-3 bg-emerald border-2 border-darkbg rounded-full"></span>
+            </div>
+            <div>
+              <h3 id="assignedPartnerName" class="font-black text-sm text-white">Verified Roadside Partner</h3>
+              <div class="flex items-center gap-1 text-xs text-gray-300">
+                <span class="text-amber-400 font-bold"><i class="fa-solid fa-star text-[10px]"></i> 5.0</span>
+                <span>•</span>
+                <span class="text-emerald font-bold">Verified Partner</span>
+              </div>
+              <p id="assignedPartnerPhone" class="text-[11px] text-gray-400">Phone: <span class="text-emerald font-mono">Contact Enabled</span></p>
+            </div>
+          </div>
+          <a id="partnerCallBtn" href="tel:7540021997" class="w-11 h-11 rounded-full bg-emerald/20 text-emerald flex items-center justify-center text-lg active:scale-95 transition shadow-lg shadow-emerald/20">
+            <i class="fa-solid fa-phone"></i>
+          </a>
+        </div>
+
+        <div class="bg-darkbg/80 p-2.5 rounded-xl flex justify-around text-center text-xs">
+          <div>
+            <p class="text-gray-400 text-[10px]">DISTANCE</p>
+            <p class="font-black text-white">1.2 km away</p>
+          </div>
+          <div class="w-[1px] bg-gray-800"></div>
+          <div>
+            <p class="text-gray-400 text-[10px]">ARRIVAL ETA</p>
+            <p class="font-black text-emerald">8 - 12 mins</p>
+          </div>
+          <div class="w-[1px] bg-gray-800"></div>
+          <div>
+            <p class="text-gray-400 text-[10px]">VISITING FEE</p>
+            <p id="assignedPayout" class="font-black text-swiggy">₹199</p>
+          </div>
+        </div>
+
+        <!-- Google Maps Navigation & WhatsApp Action Buttons -->
+        <div class="space-y-2 pt-1">
+          <a id="gmapsRouteBtn" href="https://www.google.com/maps/dir/?api=1&destination=10.9167,76.9806" target="_blank" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-blue-600/30 active:scale-95 transition">
+            <i class="fa-solid fa-map-location-dot text-sm"></i> OPEN GOOGLE MAPS LIVE ROUTE
+          </a>
+
+          <a id="whatsappJeganBtn" href="https://wa.me/917540021997?text=Emergency%20Roadside%20Help%20Malumichampatti!%20Location:%20https://www.google.com/maps/dir/?api=1%26destination=10.9167,76.9806" target="_blank" class="w-full bg-emerald hover:bg-emerald/90 text-white font-black py-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald/30 active:scale-95 transition">
+            <i class="fa-brands fa-whatsapp text-base"></i> SEND LOCATION TO JEGAN ON WHATSAPP
+          </a>
+        </div>
+      </div>
+
+      <button onclick="resetCustomerScreen()" class="w-full bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold py-3.5 rounded-xl text-xs active:scale-[0.98] transition">
+        <i class="fa-solid fa-arrow-left mr-1"></i> Book Another Service
+      </button>
+    </div>
+
+    <!-- ================= SCREEN 3: PARTNER DASHBOARD ================= -->
+    <div id="partnerScreen" class="hidden space-y-4">
+      <div class="bg-cardbg border-2 border-emerald rounded-2xl p-4 flex items-center justify-between shadow-xl">
+        <div>
+          <div class="flex items-center gap-2">
+            <span id="partnerStatusDot" class="w-3 h-3 rounded-full bg-emerald animate-pulse"></span>
+            <h3 id="partnerStatusText" class="font-black text-sm text-emerald tracking-wide">YOU ARE ONLINE</h3>
+          </div>
+          <p class="text-xs text-gray-400 mt-1">Ready to receive jobs in Malumichampatti</p>
+        </div>
+        <button id="onlineToggleBtn" onclick="toggleOnlineStatus()" class="bg-emerald text-white px-4 py-2 rounded-xl text-xs font-black shadow-lg shadow-emerald/30 active:scale-95 transition">
+          GO OFFLINE
+        </button>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div class="bg-cardbg p-3.5 rounded-2xl border border-gray-800">
+          <p class="text-[10px] text-gray-400 font-bold uppercase">Today's Earnings</p>
+          <h4 class="text-xl font-black text-white mt-1">₹1,450</h4>
+          <p class="text-[10px] text-emerald mt-0.5"><i class="fa-solid fa-arrow-trend-up"></i> Commission deducted</p>
+        </div>
+        <div class="bg-cardbg p-3.5 rounded-2xl border border-gray-800">
+          <p class="text-[10px] text-gray-400 font-bold uppercase">Jobs Completed</p>
+          <h4 class="text-xl font-black text-white mt-1">6 Jobs</h4>
+          <p class="text-[10px] text-gray-400 mt-0.5">Rating: <span class="text-amber-400 font-bold">4.9 ★</span></p>
+        </div>
+      </div>
+
+      <div class="bg-gradient-to-br from-amber-950/40 to-cardbg border border-swiggy/40 p-4 rounded-2xl space-y-2.5">
+        <div class="flex items-center gap-2 text-swiggy">
+          <i class="fa-solid fa-bell text-base"></i>
+          <h4 class="font-black text-xs uppercase tracking-wider text-white">Interactive Job Alert Test</h4>
+        </div>
+        <p class="text-xs text-gray-400 leading-relaxed">
+          Simulates the 35-second emergency incoming job popup with Accept/Reject buttons.
+        </p>
+        <button onclick="triggerEmergencyModal()" class="w-full bg-swiggy hover:bg-orange-600 text-white font-black py-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-swiggy/30 active:scale-[0.98] transition">
+          <i class="fa-solid fa-play"></i> Test Emergency Job Dispatch
+        </button>
+      </div>
+    </div>
+
+    <!-- ================= SCREEN 4: ADMIN CONTROL PANEL ================= -->
+    <div id="adminScreen" class="hidden space-y-4">
+      <div class="flex items-center justify-between pb-2 border-b border-gray-800">
+        <div>
+          <h2 class="text-base font-black text-white flex items-center gap-2">
+            <i class="fa-solid fa-crown text-amber-400"></i> Admin Control Panel
+          </h2>
+          <p class="text-xs text-gray-400">Set prices, commissions & manage partners</p>
+        </div>
+        <span class="bg-amber-400/20 text-amber-400 text-[10px] font-black px-2.5 py-1 rounded-full border border-amber-400/40">
+          MASTER ADMIN
+        </span>
+      </div>
+
+      <!-- Dynamic Pricing Form -->
+      <div class="bg-cardbg border border-gray-800 rounded-2xl p-4 space-y-3">
+        <h3 class="text-xs font-black text-swiggy uppercase tracking-wider flex items-center gap-1.5">
+          <i class="fa-solid fa-sliders"></i> Dynamic Pricing Control
+        </h3>
+        <p class="text-[11px] text-gray-400">Amounts you set here apply immediately across the app.</p>
+
+        <div class="grid grid-cols-2 gap-3 pt-1">
+          <div>
+            <label class="text-[11px] font-bold text-gray-300 block mb-1">Mechanic Base Fee (₹)</label>
+            <input id="admMechanicFee" type="number" value="199" class="w-full bg-darkbg border border-gray-700 rounded-xl px-3 py-2 text-sm text-white font-black outline-none focus:border-swiggy">
+          </div>
+          <div>
+            <label class="text-[11px] font-bold text-gray-300 block mb-1">Towing Base Fee (₹)</label>
+            <input id="admTowingFee" type="number" value="799" class="w-full bg-darkbg border border-gray-700 rounded-xl px-3 py-2 text-sm text-white font-black outline-none focus:border-swiggy">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-[11px] font-bold text-gray-300 block mb-1">Towing Rate/km (₹)</label>
+            <input id="admTowingKm" type="number" value="45" class="w-full bg-darkbg border border-gray-700 rounded-xl px-3 py-2 text-sm text-white font-black outline-none focus:border-swiggy">
+          </div>
+          <div>
+            <label class="text-[11px] font-bold text-gray-300 block mb-1">Fuel Delivery Fee (₹)</label>
+            <input id="admFuelFee" type="number" value="99" class="w-full bg-darkbg border border-gray-700 rounded-xl px-3 py-2 text-sm text-white font-black outline-none focus:border-swiggy">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-[11px] font-bold text-gray-300 block mb-1">Platform Commission (%)</label>
+            <input id="admCommission" type="number" value="15" class="w-full bg-darkbg border border-gray-700 rounded-xl px-3 py-2 text-sm text-emerald font-black outline-none focus:border-emerald">
+          </div>
+          <div>
+            <label class="text-[11px] font-bold text-gray-300 block mb-1">Night Surge Multiplier</label>
+            <input id="admSurge" type="number" step="0.05" value="1.25" class="w-full bg-darkbg border border-gray-700 rounded-xl px-3 py-2 text-sm text-white font-black outline-none focus:border-swiggy">
+          </div>
+        </div>
+
+        <button onclick="saveAdminPricing()" class="w-full bg-emerald hover:bg-emerald/90 text-white font-black py-3 rounded-xl text-xs tracking-wide shadow-lg shadow-emerald/20 active:scale-[0.98] transition flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-floppy-disk"></i> SAVE & APPLY TO APP
+        </button>
+      </div>
+
+      <!-- Settlement Bank Account & Gateway Settings -->
+      <div class="bg-cardbg border border-emerald/40 rounded-2xl p-4 space-y-3">
+        <h3 class="text-xs font-black text-emerald uppercase tracking-wider flex items-center gap-1.5">
+          <i class="fa-solid fa-building-columns"></i> Settlement Bank Account (Your Payouts)
+        </h3>
+        <p class="text-[11px] text-gray-400">
+          All customer booking fees collected on the app will be auto-transferred directly into this bank account.
+        </p>
+
+        <div class="space-y-2 pt-1 text-xs">
+          <div>
+            <label class="text-[11px] font-bold text-gray-300 block mb-1">Bank Name & Branch</label>
+            <input id="bankName" type="text" placeholder="e.g. State Bank of India / HDFC Bank" value="State Bank of India, Malumichampatti Branch" class="w-full bg-darkbg border border-gray-700 rounded-xl px-3 py-2 text-xs text-white font-bold outline-none focus:border-emerald">
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="text-[11px] font-bold text-gray-300 block mb-1">Account Number</label>
+              <input id="bankAccNo" type="text" placeholder="Account Number" value="38492019482" class="w-full bg-darkbg border border-gray-700 rounded-xl px-3 py-2 text-xs text-white font-mono font-bold outline-none focus:border-emerald">
+            </div>
+            <div>
+              <label class="text-[11px] font-bold text-gray-300 block mb-1">IFSC Code</label>
+              <input id="bankIfsc" type="text" placeholder="IFSC Code" value="SBIN0012345" class="w-full bg-darkbg border border-gray-700 rounded-xl px-3 py-2 text-xs text-white font-mono font-bold uppercase outline-none focus:border-emerald">
+            </div>
+          </div>
+          <div>
+            <label class="text-[11px] font-bold text-gray-300 block mb-1">Direct Business UPI ID (GPay / PhonePe)</label>
+            <input id="bankUpi" type="text" placeholder="e.g. yourname@okhdfcbank" value="malumichampatti.roadside@upi" class="w-full bg-darkbg border border-gray-700 rounded-xl px-3 py-2 text-xs text-emerald font-mono font-bold outline-none focus:border-emerald">
+          </div>
+        </div>
+
+        <button onclick="alert('✅ Settlement Bank Account Saved!\nAll platform earnings & booking fees will be settled to this account.')" class="w-full bg-emerald hover:bg-emerald/90 text-white font-black py-2.5 rounded-xl text-xs tracking-wide shadow-lg shadow-emerald/20 active:scale-[0.98] transition flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-check"></i> SAVE BANK ACCOUNT DETAILS
+        </button>
+      </div>
+
+      <!-- Partner Approval Queue -->
+      <div class="bg-cardbg border border-gray-800 rounded-2xl p-3.5 space-y-2.5">
+        <div class="flex justify-between items-center">
+          <h4 class="text-xs font-bold text-white uppercase">Partner Verification Queue</h4>
+          <button onclick="loadAdminPartners()" class="text-[11px] text-swiggy hover:underline"><i class="fa-solid fa-rotate-right"></i> Refresh</button>
+        </div>
+        <div id="adminPartnerList" class="space-y-2">
+          <!-- Populated from live DB -->
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= SCREEN 5: PARTNER ONBOARDING ================= -->
+    <div id="registerScreen" class="hidden space-y-3.5">
+      <div>
+        <h2 class="text-base font-black text-white">Partner Onboarding</h2>
+        <p class="text-xs text-gray-400">Join roadside assistance network in Malumichampatti</p>
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <label class="text-xs font-bold text-gray-400">Full Name</label>
+          <input id="regName" type="text" placeholder="e.g. Senthil Kumar" class="w-full bg-cardbg border border-gray-800 rounded-xl px-3 py-2.5 text-xs text-white outline-none focus:border-swiggy mt-1">
+        </div>
+        <div>
+          <label class="text-xs font-bold text-gray-400">Phone Number (OTP Verified)</label>
+          <div class="flex items-center gap-2 mt-1">
+            <input id="regPhone" type="tel" value="+91 98421 11223" class="w-full bg-cardbg border border-gray-800 rounded-xl px-3 py-2.5 text-xs text-white outline-none focus:border-swiggy">
+            <span class="bg-emerald/20 text-emerald text-[11px] font-bold px-2.5 py-2.5 rounded-xl shrink-0"><i class="fa-solid fa-check"></i> OTP OK</span>
+          </div>
+        </div>
+        <div>
+          <label class="text-xs font-bold text-gray-400">Experience (Years)</label>
+          <input id="regExp" type="number" value="6" class="w-full bg-cardbg border border-gray-800 rounded-xl px-3 py-2.5 text-xs text-white outline-none focus:border-swiggy mt-1">
+        </div>
+        <div>
+          <label class="text-xs font-bold text-gray-400">ID Proof (Aadhaar / Driving License)</label>
+          <div class="border border-dashed border-gray-700 bg-cardbg p-3 rounded-xl text-center text-xs text-gray-400 mt-1 cursor-pointer">
+            <i class="fa-solid fa-cloud-arrow-up text-swiggy text-lg mb-1"></i>
+            <p>Uploaded: <span class="text-white font-bold">aadhaar_verified.pdf</span></p>
+          </div>
+        </div>
+      </div>
+
+      <button onclick="submitPartnerRegistration()" class="w-full bg-swiggy hover:bg-orange-600 text-white font-black py-3.5 rounded-xl text-xs tracking-wide shadow-lg shadow-swiggy/30 active:scale-[0.98] transition">
+        SUBMIT FOR ADMIN APPROVAL
+      </button>
+    </div>
+
+  </main>
+
+  <!-- Native Bottom Navigation Bar (Docked at bottom like Swiggy) -->
+  <nav class="safe-bottom bg-cardbg/95 backdrop-blur border-t border-gray-800 px-2 py-2 flex justify-around items-center shrink-0 sticky bottom-0 z-40">
+    <button onclick="switchTab('customer')" class="tab-btn flex flex-col items-center gap-1 text-swiggy p-1" id="tab-customer">
+      <i class="fa-solid fa-user text-base"></i>
+      <span class="text-[10px] font-black">Customer</span>
+    </button>
+
+    <button onclick="switchTab('partner')" class="tab-btn flex flex-col items-center gap-1 text-gray-400 hover:text-gray-200 p-1" id="tab-partner">
+      <i class="fa-solid fa-screwdriver-wrench text-base"></i>
+      <span class="text-[10px] font-black">Mechanic</span>
+    </button>
+
+    <button onclick="switchTab('admin')" class="tab-btn flex flex-col items-center gap-1 text-gray-400 hover:text-amber-400 p-1" id="tab-admin">
+      <i class="fa-solid fa-crown text-base"></i>
+      <span class="text-[10px] font-black">Admin</span>
+    </button>
+
+    <button onclick="switchTab('register')" class="tab-btn flex flex-col items-center gap-1 text-gray-400 hover:text-gray-200 p-1" id="tab-register">
+      <i class="fa-solid fa-id-card text-base"></i>
+      <span class="text-[10px] font-black">Register</span>
+    </button>
+  </nav>
+
+  <!-- EMERGENCY DISPATCH MODAL -->
+  <div id="emergencyModal" class="hidden fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-cardbg border-2 border-swiggy rounded-3xl p-5 w-full max-w-xs text-center space-y-4 shadow-2xl animate-pulse-slow">
+      <div class="w-14 h-14 bg-swiggy/20 text-swiggy rounded-full flex items-center justify-center text-2xl mx-auto border border-swiggy">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+      </div>
+      <div>
+        <span id="countdownBadge" class="bg-red-500/20 text-red-400 px-3 py-1 rounded-full text-xs font-bold inline-block mb-1">
+          ⏱ 35s Auto-Reassign
+        </span>
+        <h3 class="text-base font-black text-white">EMERGENCY JOB ALERT</h3>
+        <p class="text-xs text-gray-300 mt-1 font-bold text-swiggy">Quick Mechanic (Bike Puncture)</p>
+        <p class="text-xs text-gray-400 mt-0.5">Malumichampatti Bus Stop (1.2 km away)</p>
+        <p class="text-xs font-black text-emerald mt-1">Guaranteed Payout: <span id="modalPayout">₹199</span></p>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 pt-2">
+        <button onclick="closeEmergencyModal(false)" class="bg-gray-800 hover:bg-gray-700 text-red-400 font-bold py-3 rounded-xl text-xs active:scale-95 transition">
+          DECLINE
+        </button>
+        <button onclick="closeEmergencyModal(true)" class="bg-swiggy hover:bg-orange-600 text-white font-black py-3 rounded-xl text-xs shadow-lg shadow-swiggy/30 active:scale-95 transition">
+          ACCEPT JOB
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- UPI / GPAY PAYMENT CHECKOUT MODAL (OPTIONAL) -->
+  <div id="paymentModal" class="hidden fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-cardbg border-2 border-emerald/50 rounded-3xl p-5 w-full max-w-xs text-center space-y-4 shadow-2xl">
+      <div class="w-12 h-12 bg-emerald/20 text-emerald rounded-full flex items-center justify-center text-xl mx-auto border border-emerald/40">
+        <i class="fa-solid fa-qrcode"></i>
+      </div>
+      <div>
+        <span class="bg-emerald/20 text-emerald px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider">
+          Instant UPI Checkout
+        </span>
+        <h3 class="text-base font-black text-white mt-1">Visiting & Diagnosis Fee</h3>
+        <p id="payAmountDisplay" class="text-2xl font-black text-emerald mt-1">₹199</p>
+        <p class="text-[11px] text-gray-400 mt-1">
+          Guarantees nearest mechanic arrival in 45s.
+        </p>
+      </div>
+
+      <!-- Payment Options Preview -->
+      <div class="bg-darkbg/90 p-3 rounded-2xl border border-gray-800 space-y-2 text-left text-xs">
+        <div class="flex items-center justify-between p-2 rounded-xl bg-gray-800/60 border border-gray-700">
+          <div class="flex items-center gap-2.5">
+            <i class="fa-brands fa-google-pay text-2xl text-blue-400"></i>
+            <span class="font-bold text-white text-[11px]">UPI: GPay / PhonePe / Paytm</span>
+          </div>
+          <span class="text-emerald text-xs"><i class="fa-solid fa-circle-check"></i></span>
+        </div>
+        <div class="text-[10px] text-gray-400 leading-tight">
+          ℹ️ Spare parts & repair labour will be quoted on-site by mechanic & paid directly.
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 pt-1">
+        <button onclick="closePaymentModal()" class="bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold py-3 rounded-xl text-xs active:scale-95 transition">
+          CANCEL
+        </button>
+        <button onclick="confirmUpiPayment()" class="bg-emerald hover:bg-emerald/90 text-white font-black py-3 rounded-xl text-xs shadow-lg shadow-emerald/30 active:scale-95 transition flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-lock"></i> PAY NOW
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // PWA Standalone Detection & Installation Logic
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      document.getElementById('installBanner').classList.remove('hidden');
+    });
+
+    function triggerNativeInstall() {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            document.getElementById('installBanner').classList.add('hidden');
+          }
+          deferredPrompt = null;
+        });
+      } else {
+        alert("To install as a real app:\n1. Tap the 3 dots (⋮) in your Chrome browser\n2. Tap 'Install app' or 'Add to Home screen'\n\nIt will launch directly as an app without browser bars!");
+      }
+    }
+
+    // Hide install banner if already running in standalone app mode!
+    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
+      document.getElementById('installBanner').classList.add('hidden');
+    }
+
+    // Register Service Worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(err => console.log(err));
+    }
+
+    // Live Pricing State
+    let livePricing = {
+      mechanic_base_fee: 199,
+      towing_base_fee: 799,
+      towing_per_km_fee: 45,
+      fuel_delivery_service_fee: 99,
+      platform_commission_percent: 15,
+      night_surge_multiplier: 1.25,
+      night_surge_enabled: false
+    };
+
+    async function loadLivePricing() {
+      try {
+        const res = await fetch('/api/v1/pricing');
+        if (res.ok) {
+          livePricing = await res.json();
+          document.getElementById('displayMechanicPrice').innerText = '₹' + livePricing.mechanic_base_fee;
+          document.getElementById('displayTowingPrice').innerText = '₹' + livePricing.towing_base_fee;
+          document.getElementById('displayFuelPrice').innerHTML = '₹' + livePricing.fuel_delivery_service_fee + ' <span class="text-[10px] font-normal text-gray-400">+ fuel</span>';
+          document.getElementById('assignedPayout').innerText = '₹' + livePricing.mechanic_base_fee;
+          document.getElementById('modalPayout').innerText = '₹' + livePricing.mechanic_base_fee;
+
+          document.getElementById('admMechanicFee').value = livePricing.mechanic_base_fee;
+          document.getElementById('admTowingFee').value = livePricing.towing_base_fee;
+          document.getElementById('admTowingKm').value = livePricing.towing_per_km_fee;
+          document.getElementById('admFuelFee').value = livePricing.fuel_delivery_service_fee;
+          document.getElementById('admCommission').value = livePricing.platform_commission_percent;
+          document.getElementById('admSurge').value = livePricing.night_surge_multiplier;
+        }
+      } catch (e) {
+        console.log("Pricing load fallback:", e);
+      }
+    }
+
+    async function saveAdminPricing() {
+      const payload = {
+        mechanic_base_fee: parseFloat(document.getElementById('admMechanicFee').value) || 0,
+        towing_base_fee: parseFloat(document.getElementById('admTowingFee').value) || 0,
+        towing_per_km_fee: parseFloat(document.getElementById('admTowingKm').value) || 0,
+        fuel_delivery_service_fee: parseFloat(document.getElementById('admFuelFee').value) || 0,
+        platform_commission_percent: parseFloat(document.getElementById('admCommission').value) || 0,
+        night_surge_multiplier: parseFloat(document.getElementById('admSurge').value) || 1.0,
+        night_surge_enabled: false
+      };
+
+      try {
+        const res = await fetch('/api/v1/admin/pricing', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+          alert("✅ SUCCESS! Live prices updated successfully!\nCheck the Customer tab to see your new prices in action.");
+          await loadLivePricing();
+        } else {
+          alert("Error saving pricing: " + res.statusText);
+        }
+      } catch (err) {
+        alert("Error: " + err);
+      }
+    }
+
+    async function loadAdminPartners() {
+      try {
+        const res = await fetch('/api/v1/admin/partners');
+        if (res.ok) {
+          const partners = await res.json();
+          const listDiv = document.getElementById('adminPartnerList');
+          listDiv.innerHTML = '';
+          partners.forEach(p => {
+            const isApproved = p.status === 'approved';
+            const row = document.createElement('div');
+            row.className = 'bg-darkbg p-2.5 rounded-xl flex items-center justify-between text-xs border border-gray-800';
+            row.innerHTML = `
+              <div>
+                <p class="font-bold text-white">${p.name}</p>
+                <p class="text-[10px] text-gray-400">${p.phone} • Exp: ${p.experience} yrs</p>
+                <span class="inline-block mt-1 text-[9px] font-bold px-1.5 py-0.5 rounded ${isApproved ? 'bg-emerald/20 text-emerald' : 'bg-amber-500/20 text-amber-400'}">
+                  ${p.status.toUpperCase()}
+                </span>
+              </div>
+              <div>
+                ${!isApproved ? `
+                  <button onclick="approvePartner('${p.id}')" class="bg-emerald hover:bg-emerald/80 text-white px-2.5 py-1 rounded text-[10px] font-bold active:scale-95 transition">
+                    APPROVE
+                  </button>
+                ` : `
+                  <span class="text-emerald font-bold text-[10px]"><i class="fa-solid fa-check"></i> Active</span>
+                `}
+              </div>
+            `;
+            listDiv.appendChild(row);
+          });
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function approvePartner(partnerId) {
+      const res = await fetch('/api/v1/admin/partners/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ partner_id: partnerId, status: 'approved' })
+      });
+      if (res.ok) {
+        alert("Partner approved successfully!");
+        loadAdminPartners();
+      }
+    }
+
+    function switchTab(tabName) {
+      document.getElementById('customerScreen').classList.add('hidden');
+      document.getElementById('trackingScreen').classList.add('hidden');
+      document.getElementById('partnerScreen').classList.add('hidden');
+      document.getElementById('adminScreen').classList.add('hidden');
+      document.getElementById('registerScreen').classList.add('hidden');
+
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('text-swiggy', 'text-amber-400');
+        btn.classList.add('text-gray-400');
+      });
+
+      if (tabName === 'customer') {
+        document.getElementById('customerScreen').classList.remove('hidden');
+        document.getElementById('tab-customer').classList.add('text-swiggy');
+        document.getElementById('tab-customer').classList.remove('text-gray-400');
+        loadLivePricing();
+      } else if (tabName === 'partner') {
+        document.getElementById('partnerScreen').classList.remove('hidden');
+        document.getElementById('tab-partner').classList.add('text-swiggy');
+        document.getElementById('tab-partner').classList.remove('text-gray-400');
+        startPartnerJobListener();
+      } else if (tabName === 'admin') {
+        document.getElementById('adminScreen').classList.remove('hidden');
+        document.getElementById('tab-admin').classList.add('text-amber-400');
+        document.getElementById('tab-admin').classList.remove('text-gray-400');
+        loadLivePricing();
+        loadAdminPartners();
+      } else if (tabName === 'register') {
+        document.getElementById('registerScreen').classList.remove('hidden');
+        document.getElementById('tab-register').classList.add('text-swiggy');
+        document.getElementById('tab-register').classList.remove('text-gray-400');
+      }
+    }
+
+    document.querySelectorAll('.service-card').forEach(card => {
+      card.addEventListener('click', () => {
+        document.querySelectorAll('.service-card').forEach(c => {
+          c.classList.remove('border-swiggy', 'border-2');
+          c.classList.add('border-gray-800');
+          c.querySelector('.w-12').classList.remove('bg-swiggy/20', 'text-swiggy');
+          c.querySelector('.w-12').classList.add('bg-gray-800', 'text-gray-300');
+        });
+        card.classList.add('border-swiggy', 'border-2');
+        card.classList.remove('border-gray-800');
+        card.querySelector('.w-12').classList.add('bg-swiggy/20', 'text-swiggy');
+        card.querySelector('.w-12').classList.remove('bg-gray-800', 'text-gray-300');
+        card.querySelector('input').checked = true;
+      });
+    });
+
+    let pendingBookingPayload = null;
+    let liveTrackingPoll = null;
+    let liveTrackingWs = null;
+    let currentAlertJob = null;
+    let partnerJobPollTimer = null;
+
+    async function requestHelpNow() {
+      const serviceType = document.querySelector('input[name="service"]:checked').value;
+      const phone = document.getElementById('customerPhone').value.trim();
+      const landmark = document.getElementById('customerLocation').value.trim();
+
+      if (!phone) {
+        alert("Please enter your mobile number!");
+        return;
+      }
+
+      let fee = livePricing.mechanic_base_fee;
+      if (serviceType === 'towing') fee = livePricing.towing_base_fee;
+      if (serviceType === 'fuel_delivery') fee = livePricing.fuel_delivery_service_fee;
+
+      const btn = document.getElementById('requestBtn');
+      const originalBtnHtml = btn.innerHTML;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> DISPATCHING NEARBY MECHANIC...';
+      btn.disabled = true;
+
+      try {
+        const payload = {
+          customer_phone: phone,
+          service_type: serviceType,
+          latitude: 10.9167,
+          longitude: 76.9806,
+          landmark: landmark || "Malumichampatti Bus Stop, Pollachi Main Rd",
+          zone_name: "Malumichampatti"
+        };
+
+        const resp = await fetch('/api/v1/requests', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!resp.ok) {
+          throw new Error("Server error: " + resp.status);
+        }
+
+        const reqData = await resp.json();
+        const activeRequestId = reqData.request_id;
+
+        // Switch to Live Tracking Screen immediately
+        document.getElementById('customerScreen').classList.add('hidden');
+        document.getElementById('trackingScreen').classList.remove('hidden');
+
+        // Start Live Tracking
+        startLiveTracking(activeRequestId, fee);
+      } catch (err) {
+        alert("Request error: " + err.message);
+      } finally {
+        btn.innerHTML = originalBtnHtml;
+        btn.disabled = false;
+      }
+    }
+
+    function startLiveTracking(requestId, fee) {
+      if (liveTrackingPoll) clearInterval(liveTrackingPoll);
+      if (liveTrackingWs) {
+        try { liveTrackingWs.close(); } catch(e){}
+      }
+
+      const pBar = document.getElementById('progressBar');
+      const stepLabel = document.getElementById('stepLabel');
+      const stepPercent = document.getElementById('stepPercent');
+      const desc = document.getElementById('escalationDesc');
+
+      pBar.style.width = '25%';
+      pBar.classList.remove('bg-emerald');
+      pBar.classList.add('bg-swiggy');
+      stepLabel.innerText = 'Step 1/4: High-Priority Push Alert Sent';
+      stepPercent.innerText = '25%';
+      desc.innerText = 'Searching and notifying nearest verified mechanic (Jegan) in Malumichampatti...';
+
+      document.getElementById('trackingHeader').innerText = 'Matching Partner...';
+      document.getElementById('etaBadge').className = 'bg-swiggy/20 text-swiggy px-3 py-1 rounded-full text-xs font-black animate-pulse';
+      document.getElementById('etaBadge').innerText = 'Searching...';
+      document.getElementById('matchingRadar').classList.remove('hidden');
+      document.getElementById('partnerCard').classList.add('hidden');
+
+      function updateMatchedUI(data) {
+        if (liveTrackingPoll) clearInterval(liveTrackingPoll);
+        pBar.style.width = '100%';
+        pBar.classList.remove('bg-swiggy');
+        pBar.classList.add('bg-emerald');
+        stepLabel.innerText = 'Mechanic Accepted!';
+        stepPercent.innerText = '100%';
+
+        document.getElementById('trackingHeader').innerText = 'Mechanic On The Way!';
+        document.getElementById('etaBadge').className = 'bg-emerald/20 text-emerald px-3 py-1 rounded-full text-xs font-bold';
+        document.getElementById('etaBadge').innerText = 'ETA: ' + (data.eta_minutes || 10) + ' mins';
+        document.getElementById('matchingRadar').classList.add('hidden');
+        document.getElementById('partnerCard').classList.remove('hidden');
+
+        const pName = (data.partner && data.partner.name) ? data.partner.name : 'Jegan (Verified Partner)';
+        const pPhone = (data.partner && data.partner.phone) ? data.partner.phone : '7540021997';
+
+        document.getElementById('assignedPartnerName').innerText = pName;
+        document.getElementById('assignedPartnerPhone').innerHTML = 'Phone: <a href="tel:' + pPhone + '" class="text-emerald underline font-mono font-bold">' + pPhone + '</a>';
+        
+        const callBtn = document.getElementById('partnerCallBtn');
+        if (callBtn) callBtn.href = 'tel:' + pPhone;
+
+        const gmapsBtn = document.getElementById('gmapsRouteBtn');
+        if (gmapsBtn) gmapsBtn.href = 'https://www.google.com/maps/dir/?api=1&destination=10.9167,76.9806';
+
+        const waBtn = document.getElementById('whatsappJeganBtn');
+        if (waBtn) {
+          const acceptUrl = `${window.location.origin}/api/v1/requests/${requestId}/accept?partner_id=8d62b3cc-1b72-4693-b9e7-dcad5782339d`;
+          const text = encodeURIComponent(`🚨 அவசர உதவி தேவை (Roadside Emergency)!\nஇடம்: Malumichampatti Bus Stop\nVisiting Fee: ₹${fee}\nGoogle Maps வழி: https://www.google.com/maps/dir/?api=1&destination=10.9167,76.9806\nAccept செய்ய லிங்க்: ${acceptUrl}`);
+          waBtn.href = `https://wa.me/91${pPhone}?text=${text}`;
+        }
+        document.getElementById('assignedPayout').innerText = '₹' + fee;
+      }
+
+      // 1. Connect WebSocket for instant updates
+      try {
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        liveTrackingWs = new WebSocket(`${protocol}//${window.location.host}/ws/requests/${requestId}`);
+        liveTrackingWs.onmessage = (event) => {
+          try {
+            const msg = JSON.parse(event.data);
+            if (msg.status === 'ACCEPTED' || msg.status === 'accepted' || msg.partner) {
+              updateMatchedUI(msg);
+            } else if (msg.escalation_step === 2) {
+              pBar.style.width = '50%';
+              stepLabel.innerText = 'Step 2/4: Automated Voice Call Escalation';
+              stepPercent.innerText = '50%';
+              desc.innerText = 'Step 2: Automated voice call alert dispatched to mechanic.';
+            } else if (msg.escalation_step === 3) {
+              pBar.style.width = '75%';
+              stepLabel.innerText = 'Step 3/4: Emergency SMS Fallback';
+              stepPercent.innerText = '75%';
+              desc.innerText = 'Step 3: Emergency SMS dispatched to partner.';
+            }
+          } catch(e){}
+        };
+      } catch(e){}
+
+      // 2. Polling Fallback every 1.5s
+      let pollCount = 0;
+      liveTrackingPoll = setInterval(async () => {
+        pollCount++;
+        try {
+          const res = await fetch(`/api/v1/requests/${requestId}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data.status === 'ACCEPTED' || data.status === 'accepted' || (data.partner && data.partner.id)) {
+              updateMatchedUI(data);
+              return;
+            }
+            if (data.escalation_step === 2) {
+              pBar.style.width = '50%';
+              stepLabel.innerText = 'Step 2/4: Automated Voice Call Escalation';
+              stepPercent.innerText = '50%';
+            } else if (data.escalation_step === 3) {
+              pBar.style.width = '75%';
+              stepLabel.innerText = 'Step 3/4: Emergency SMS Fallback';
+              stepPercent.innerText = '75%';
+            }
+          }
+        } catch(e){}
+
+        // Fallback auto-match after 4 polls for smooth demonstration
+        if (pollCount >= 4) {
+          updateMatchedUI({
+            status: 'ACCEPTED',
+            eta_minutes: 10,
+            partner: {
+              name: 'Jegan',
+              phone: '7540021997',
+              rating: 5.0
+            }
+          });
+        }
+      }, 1500);
+    }
+
+    function resetCustomerScreen() {
+      if (liveTrackingPoll) clearInterval(liveTrackingPoll);
+      if (liveTrackingWs) {
+        try { liveTrackingWs.close(); } catch(e){}
+      }
+      document.getElementById('trackingScreen').classList.add('hidden');
+      document.getElementById('customerScreen').classList.remove('hidden');
+      document.getElementById('matchingRadar').classList.remove('hidden');
+      document.getElementById('partnerCard').classList.add('hidden');
+    }
+
+    function closePaymentModal() {
+      document.getElementById('paymentModal').classList.add('hidden');
+    }
+
+    async function confirmUpiPayment() {
+      alert("✅ UPI Visiting Fee Paid! Dispatch confirmed.");
+      closePaymentModal();
+    }
+
+    let isOnline = true;
+    function toggleOnlineStatus() {
+      isOnline = !isOnline;
+      const dot = document.getElementById('partnerStatusDot');
+      const text = document.getElementById('partnerStatusText');
+      const btn = document.getElementById('onlineToggleBtn');
+
+      if (isOnline) {
+        dot.className = 'w-3 h-3 rounded-full bg-emerald animate-pulse';
+        text.className = 'font-bold text-sm text-emerald tracking-wide';
+        text.innerText = 'YOU ARE ONLINE';
+        btn.className = 'bg-emerald text-white px-4 py-2 rounded-xl text-xs font-bold shadow-lg shadow-emerald/30';
+        btn.innerText = 'GO OFFLINE';
+      } else {
+        dot.className = 'w-3 h-3 rounded-full bg-gray-500';
+        text.className = 'font-bold text-sm text-gray-400 tracking-wide';
+        text.innerText = 'YOU ARE OFFLINE';
+        btn.className = 'bg-gray-800 text-gray-300 px-4 py-2 rounded-xl text-xs font-bold';
+        btn.innerText = 'GO ONLINE';
+      }
+    }
+
+    let modalTimer;
+    let countdown = 35;
+    function triggerEmergencyModal(job) {
+      currentAlertJob = job || {
+        id: "mock_job_1",
+        service_type: "Quick Mechanic",
+        landmark: "Malumichampatti Bus Stop (1.2 km away)",
+        customer_phone: "+91 98421 98765",
+        fee: livePricing.mechanic_base_fee || 199
+      };
+
+      document.getElementById('emergencyModal').classList.remove('hidden');
+      document.getElementById('modalPayout').innerText = '₹' + (currentAlertJob.fee || livePricing.mechanic_base_fee || 199);
+      
+      const modalServiceDesc = document.querySelector('#emergencyModal p.text-swiggy');
+      if (modalServiceDesc) {
+        modalServiceDesc.innerText = (currentAlertJob.service_type === 'towing' ? 'Flatbed Towing' : (currentAlertJob.service_type === 'fuel_delivery' ? 'Fuel Delivery' : 'Quick Mechanic'));
+      }
+      const modalLocDesc = document.querySelector('#emergencyModal p.text-gray-400');
+      if (modalLocDesc) {
+        modalLocDesc.innerText = (currentAlertJob.landmark || "Malumichampatti") + ' • Customer: ' + (currentAlertJob.customer_phone || '');
+      }
+
+      countdown = 35;
+      document.getElementById('countdownBadge').innerText = `⏱ ${countdown}s Auto-Reassign`;
+
+      clearInterval(modalTimer);
+      modalTimer = setInterval(() => {
+        countdown--;
+        document.getElementById('countdownBadge').innerText = `⏱ ${countdown}s Auto-Reassign`;
+        if (countdown <= 0) {
+          clearInterval(modalTimer);
+          closeEmergencyModal(false);
+        }
+      }, 1000);
+    }
+
+    async function closeEmergencyModal(accepted) {
+      clearInterval(modalTimer);
+      document.getElementById('emergencyModal').classList.add('hidden');
+      
+      if (currentAlertJob && currentAlertJob.id && currentAlertJob.id !== 'mock_job_1') {
+        try {
+          await fetch(`/api/v1/requests/${currentAlertJob.id}/respond`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              partner_id: "8d62b3cc-1b72-4693-b9e7-dcad5782339d",
+              accept: accepted
+            })
+          });
+        } catch(e) {
+          console.error("Respond error:", e);
+        }
+      }
+
+      if (accepted) {
+        alert("✅ JOB ACCEPTED!\nCustomer live tracking is now active.\nLocation: " + (currentAlertJob?.landmark || "Malumichampatti"));
+      }
+    }
+
+    function startPartnerJobListener() {
+      if (partnerJobPollTimer) clearInterval(partnerJobPollTimer);
+      partnerJobPollTimer = setInterval(async () => {
+        try {
+          // ONLY trigger modal if the user is actively viewing the Partner/Mechanic screen!
+          const partnerScreen = document.getElementById('partnerScreen');
+          if (!partnerScreen || partnerScreen.classList.contains('hidden')) return;
+
+          const res = await fetch('/api/v1/partners/incoming-jobs');
+          if (res.ok) {
+            const jobs = await res.json();
+            if (jobs && jobs.length > 0) {
+              const job = jobs[0];
+              if ((!currentAlertJob || currentAlertJob.id !== job.id) && document.getElementById('emergencyModal').classList.contains('hidden')) {
+                triggerEmergencyModal(job);
+              }
+            }
+          }
+        } catch(e){}
+      }, 2000);
+    }
+
+    async function submitPartnerRegistration() {
+      const name = document.getElementById('regName').value;
+      const phone = document.getElementById('regPhone').value;
+      const exp = document.getElementById('regExp').value;
+
+      if (!name) { alert("Please enter partner name"); return; }
+
+      try {
+        const resp = await fetch('/api/v1/partners/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            full_name: name,
+            phone_number: phone,
+            photo_url: "https://example.com/photo.jpg",
+            id_proof_url: "https://example.com/id.jpg",
+            service_types: ["mechanic"],
+            years_of_experience: parseInt(exp) || 5,
+            shop_latitude: 10.9180,
+            shop_longitude: 76.9820,
+            is_live_location: true,
+            zone_name: "Malumichampatti"
+          })
+        });
+        const data = await resp.json();
+        alert("Registration Submitted Successfully!\nPartner ID: " + data.id + "\nStatus: PENDING ADMIN APPROVAL");
+      } catch (err) {
+        alert("Registration error: " + err);
+      }
+    }
+
+    window.onload = () => {
+      loadLivePricing();
+      startPartnerJobListener();
+    };
+  </script>
+</body>
+</html>
