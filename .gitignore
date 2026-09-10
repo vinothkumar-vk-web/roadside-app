@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+*$py.class
+*.db
+*.sqlite3
+*.zip
+cloudflared.exe
+.env
+.vscode/
+frontend/
+locustfile.py
+verify_system.py
+run_backend.bat
+test_system.bat
+VS_CODE_GUIDE.md
