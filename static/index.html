@@ -19,7 +19,7 @@
   <!-- Instant Cache-Buster & PWA Purge on Version Update -->
   <script>
     (function() {
-      const APP_VERSION = 'v5.4-clean-portal';
+      const APP_VERSION = 'v5.5-portal-fixed';
       if (localStorage.getItem('installed_app_ver') !== APP_VERSION) {
         localStorage.setItem('installed_app_ver', APP_VERSION);
         if ('caches' in window) {
@@ -31,8 +31,8 @@
           });
         }
         // Force refresh to reload newest HTML from server
-        if (location.search.indexOf('v=5.4') === -1) {
-          location.replace(location.pathname + '?v=5.4');
+        if (location.search.indexOf('v=5.5') === -1) {
+          location.replace(location.pathname + '?v=5.5');
         }
       }
     })();
@@ -350,6 +350,8 @@
             Step 1: Pushing high-priority alert to nearest mechanic with Accept/Reject notification.
           </p>
         </div>
+      </div>
+
       <!-- Real-Time Mechanic Arrived Banner -->
       <div id="reachedSpotBanner" class="hidden bg-emerald/20 border-2 border-emerald rounded-2xl p-3.5 text-center space-y-1 animate-pulse shadow-lg shadow-emerald/20">
         <div class="flex items-center justify-center gap-2 text-emerald font-black text-sm">
