@@ -175,35 +175,76 @@
         </div>
       </div>
 
-      <!-- Breakdown Location with Real GPS Auto-Detect -->
-      <div class="bg-cardbg p-3.5 rounded-2xl border border-gray-800 space-y-1.5">
+      <!-- Breakdown Location with Real Phone GPS Auto-Detect -->
+      <div class="bg-cardbg p-3.5 rounded-2xl border border-gray-800 space-y-2">
         <div class="flex justify-between items-center">
           <label class="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Your Breakdown Spot</label>
           <button type="button" onclick="detectUserGpsLocation(true)" class="text-[10px] bg-swiggy/20 hover:bg-swiggy/30 text-swiggy px-2.5 py-1 rounded-lg font-bold flex items-center gap-1 active:scale-95 transition">
-            <i class="fa-solid fa-location-crosshairs animate-pulse"></i> Auto-Detect GPS
+            <i class="fa-solid fa-location-crosshairs animate-pulse"></i> Auto-Detect My Phone GPS
           </button>
         </div>
         <div class="flex items-center gap-2.5 bg-darkbg px-3 py-2.5 rounded-xl border border-gray-700/60">
           <i class="fa-solid fa-location-dot text-emerald text-base shrink-0"></i>
-          <input id="customerLocation" type="text" placeholder="Tap Auto-Detect GPS or type landmark..." value="Fetching your live GPS location..." class="bg-transparent text-xs text-white w-full outline-none font-medium">
+          <input id="customerLocation" type="text" placeholder="Detecting your phone GPS..." value="" class="bg-transparent text-xs text-white w-full outline-none font-medium">
+        </div>
+        <!-- Live GPS Status & Verification Link -->
+        <div id="gpsStatusCard" class="flex items-center justify-between text-[10px] bg-darkbg/80 border border-gray-800 rounded-xl px-2.5 py-1.5 text-gray-400">
+          <span id="gpsCoordinatesBadge" class="flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+            Acquiring phone GPS satellite...
+          </span>
+          <a id="viewMySpotMapsLink" href="#" target="_blank" class="text-swiggy font-bold hover:underline hidden flex items-center gap-1">
+            <i class="fa-solid fa-map-location-dot"></i> View on Google Maps
+          </a>
         </div>
       </div>
 
-      <!-- Contact Phone -->
+      <!-- Contact Phone (Auto-saved) -->
       <div class="bg-cardbg p-3.5 rounded-2xl border border-gray-800 space-y-1.5">
         <div class="flex justify-between items-center">
           <label class="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Your Mobile Number</label>
-          <span class="text-[10px] text-emerald font-semibold"><i class="fa-solid fa-lock"></i> Number Protected</span>
+          <span class="text-[10px] text-emerald font-semibold"><i class="fa-solid fa-floppy-disk"></i> Auto-Saved</span>
         </div>
         <div class="flex items-center gap-2.5 bg-darkbg px-3 py-2.5 rounded-xl border border-gray-700/60">
           <i class="fa-solid fa-phone text-swiggy text-sm shrink-0"></i>
-          <input id="customerPhone" type="tel" value="+91 98421 98765" class="bg-transparent text-xs text-white w-full outline-none font-medium">
+          <input id="customerPhone" type="tel" placeholder="Enter your 10-digit mobile number" value="" class="bg-transparent text-xs text-white w-full outline-none font-medium">
         </div>
       </div>
 
-      <!-- Main Action Button -->
+      <!-- Prominent Payment Mode Selection -->
+      <div class="bg-cardbg p-3.5 rounded-2xl border border-gray-800 space-y-2">
+        <div class="flex justify-between items-center">
+          <label class="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Select Payment Mode</label>
+          <span class="text-[10px] bg-emerald/20 text-emerald px-2 py-0.5 rounded font-bold">100% Secure</span>
+        </div>
+        <div class="grid grid-cols-3 gap-2">
+          <!-- Mode 1: Razorpay Gateway -->
+          <label class="pay-option-card flex flex-col items-center justify-center p-2.5 bg-darkbg rounded-xl border-2 border-swiggy cursor-pointer text-center active:scale-95 transition" data-mode="razorpay">
+            <input type="radio" name="pay_mode" value="razorpay" checked class="hidden">
+            <i class="fa-solid fa-credit-card text-swiggy text-base mb-1"></i>
+            <span class="text-[11px] font-black text-white leading-tight">Razorpay</span>
+            <span class="text-[9px] text-gray-400">Cards/UPI</span>
+          </label>
+          <!-- Mode 2: Direct UPI App -->
+          <label class="pay-option-card flex flex-col items-center justify-center p-2.5 bg-darkbg rounded-xl border border-gray-700 cursor-pointer text-center active:scale-95 transition" data-mode="upi">
+            <input type="radio" name="pay_mode" value="upi" class="hidden">
+            <i class="fa-brands fa-google-pay text-emerald text-lg mb-0.5"></i>
+            <span class="text-[11px] font-black text-white leading-tight">Direct UPI</span>
+            <span class="text-[9px] text-emerald font-bold">PhonePe/GPay</span>
+          </label>
+          <!-- Mode 3: Pay on Site -->
+          <label class="pay-option-card flex flex-col items-center justify-center p-2.5 bg-darkbg rounded-xl border border-gray-700 cursor-pointer text-center active:scale-95 transition" data-mode="cash">
+            <input type="radio" name="pay_mode" value="cash" class="hidden">
+            <i class="fa-solid fa-hand-holding-dollar text-amber-400 text-base mb-1"></i>
+            <span class="text-[11px] font-black text-white leading-tight">On Arrival</span>
+            <span class="text-[9px] text-gray-400">Cash/UPI on spot</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Main Action Button (Dynamic amount) -->
       <button id="requestBtn" onclick="requestHelpNow()" class="w-full bg-swiggy hover:bg-orange-600 text-white font-black py-4 rounded-2xl shadow-xl shadow-swiggy/30 active:scale-[0.98] transition flex items-center justify-center gap-2 text-sm tracking-wide">
-        <i class="fa-solid fa-bolt"></i> REQUEST HELP NOW
+        <i class="fa-solid fa-bolt"></i> <span id="mainBtnLabel">PAY ₹199 & REQUEST HELP NOW</span>
       </button>
     </div>
 
@@ -427,25 +468,25 @@
         <div class="space-y-2 pt-1 text-xs">
           <div>
             <label class="text-[11px] font-bold text-gray-300 block mb-1">Bank Name & Branch</label>
-            <input id="bankName" type="text" placeholder="e.g. State Bank of India / HDFC Bank" value="State Bank of India, Malumichampatti Branch" class="w-full bg-darkbg border border-gray-700 rounded-xl px-3 py-2 text-xs text-white font-bold outline-none focus:border-emerald">
+            <input id="bankName" type="text" placeholder="e.g. State Bank of India / HDFC Bank" value="" class="w-full bg-darkbg border border-gray-700 rounded-xl px-3 py-2 text-xs text-white font-bold outline-none focus:border-emerald">
           </div>
           <div class="grid grid-cols-2 gap-2">
             <div>
               <label class="text-[11px] font-bold text-gray-300 block mb-1">Account Number</label>
-              <input id="bankAccNo" type="text" placeholder="Account Number" value="38492019482" class="w-full bg-darkbg border border-gray-700 rounded-xl px-3 py-2 text-xs text-white font-mono font-bold outline-none focus:border-emerald">
+              <input id="bankAccNo" type="text" placeholder="e.g. 38492019482" value="" class="w-full bg-darkbg border border-gray-700 rounded-xl px-3 py-2 text-xs text-white font-mono font-bold outline-none focus:border-emerald">
             </div>
             <div>
               <label class="text-[11px] font-bold text-gray-300 block mb-1">IFSC Code</label>
-              <input id="bankIfsc" type="text" placeholder="IFSC Code" value="SBIN0012345" class="w-full bg-darkbg border border-gray-700 rounded-xl px-3 py-2 text-xs text-white font-mono font-bold uppercase outline-none focus:border-emerald">
+              <input id="bankIfsc" type="text" placeholder="e.g. SBIN0012345" value="" class="w-full bg-darkbg border border-gray-700 rounded-xl px-3 py-2 text-xs text-white font-mono font-bold uppercase outline-none focus:border-emerald">
             </div>
           </div>
           <div>
             <label class="text-[11px] font-bold text-gray-300 block mb-1">Direct Business UPI ID (GPay / PhonePe)</label>
-            <input id="bankUpi" type="text" placeholder="e.g. yourname@okhdfcbank" value="malumichampatti.roadside@upi" class="w-full bg-darkbg border border-gray-700 rounded-xl px-3 py-2 text-xs text-emerald font-mono font-bold outline-none focus:border-emerald">
+            <input id="bankUpi" type="text" placeholder="e.g. yourname@okaxis / yourphone@upi" value="" class="w-full bg-darkbg border border-gray-700 rounded-xl px-3 py-2 text-xs text-emerald font-mono font-bold outline-none focus:border-emerald">
           </div>
         </div>
 
-        <button onclick="alert('✅ Settlement Bank Account Saved!\nAll platform earnings & booking fees will be settled to this account.')" class="w-full bg-emerald hover:bg-emerald/90 text-white font-black py-2.5 rounded-xl text-xs tracking-wide shadow-lg shadow-emerald/20 active:scale-[0.98] transition flex items-center justify-center gap-1.5">
+        <button onclick="saveBankDetails()" class="w-full bg-emerald hover:bg-emerald/90 text-white font-black py-2.5 rounded-xl text-xs tracking-wide shadow-lg shadow-emerald/20 active:scale-[0.98] transition flex items-center justify-center gap-1.5">
           <i class="fa-solid fa-check"></i> SAVE BANK ACCOUNT DETAILS
         </button>
       </div>
@@ -659,15 +700,16 @@
       document.getElementById('installBanner').classList.add('hidden');
     }
 
-    // Register Service Worker
+    // Register Service Worker with cache-busting
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js').catch(err => console.log(err));
+      navigator.serviceWorker.register('/sw.js?v=3.1').catch(err => console.log(err));
     }
 
     // ================= GLOBAL STATE =================
     let userCurrentLat = 10.9167;
     let userCurrentLon = 76.9806;
-    let userCurrentLandmark = "Malumichampatti, Coimbatore";
+    let userCurrentLandmark = "";
+    let gpsWatchId = null;
     let pendingBookingData = null;
     let activeTrackingSession = null;
     let liveTrackingPoll = null;
@@ -675,61 +717,106 @@
     let currentAlertJob = null;
     let partnerJobPollTimer = null;
 
-    // ================= REAL GPS AUTO-DETECT =================
+    // ================= REAL PHONE GPS AUTO-DETECT =================
     function detectUserGpsLocation(isManual = false) {
       const locInput = document.getElementById('customerLocation');
-      if (locInput) {
-        locInput.value = "📍 Acquiring high-accuracy GPS coordinates...";
+      const badge = document.getElementById('gpsCoordinatesBadge');
+      const mapsLink = document.getElementById('viewMySpotMapsLink');
+
+      if (locInput && !locInput.value) {
+        locInput.value = "📍 Locating your phone GPS...";
+      }
+      if (badge) {
+        badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span> Accessing Phone GPS Satellite...';
       }
 
       if (!navigator.geolocation) {
-        if (locInput) locInput.value = "Malumichampatti Bus Stop, Coimbatore";
+        if (badge) badge.innerHTML = '<span class="text-red-400">GPS not supported on device</span>';
         if (isManual) alert("GPS is not supported on this device/browser.");
         return;
       }
 
-      navigator.geolocation.getCurrentPosition(
-        async (pos) => {
-          userCurrentLat = pos.coords.latitude;
-          userCurrentLon = pos.coords.longitude;
-          const acc = Math.round(pos.coords.accuracy || 10);
-          console.log(`[GPS Acquired] Lat: ${userCurrentLat}, Lon: ${userCurrentLon}, Accuracy: ±${acc}m`);
+      if (gpsWatchId) navigator.geolocation.clearWatch(gpsWatchId);
 
-          try {
-            const resp = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${userCurrentLat}&lon=${userCurrentLon}&zoom=18&addressdetails=1`, {
-              headers: { 'Accept-Language': 'en' }
-            });
-            if (resp.ok) {
-              const data = await resp.json();
-              const road = data.address?.road || data.address?.suburb || data.address?.neighbourhood || '';
-              const city = data.address?.city || data.address?.town || data.address?.county || 'Coimbatore';
-              userCurrentLandmark = road ? `${road}, ${city} (±${acc}m)` : `${(data.display_name || '').split(',').slice(0, 3).join(',')} (±${acc}m)`;
-            } else {
-              userCurrentLandmark = `Live Spot: ${userCurrentLat.toFixed(5)}, ${userCurrentLon.toFixed(5)} (±${acc}m)`;
-            }
-          } catch (err) {
+      const onGpsSuccess = async (pos) => {
+        userCurrentLat = pos.coords.latitude;
+        userCurrentLon = pos.coords.longitude;
+        const acc = Math.round(pos.coords.accuracy || 10);
+        console.log(`[Real Phone GPS] Lat: ${userCurrentLat}, Lon: ${userCurrentLon}, Acc: ±${acc}m`);
+
+        if (badge) {
+          badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald"></span> <b class="text-white">Phone GPS Locked:</b> ${userCurrentLat.toFixed(5)}, ${userCurrentLon.toFixed(5)} <span class="text-emerald font-bold">(±${acc}m)</span>`;
+        }
+        if (mapsLink) {
+          mapsLink.href = `https://www.google.com/maps?q=${userCurrentLat},${userCurrentLon}`;
+          mapsLink.classList.remove('hidden');
+        }
+
+        // Try reverse geocoding via OpenStreetMap Nominatim
+        try {
+          const resp = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${userCurrentLat}&lon=${userCurrentLon}&zoom=18&addressdetails=1`, {
+            headers: { 'Accept-Language': 'en' }
+          });
+          if (resp.ok) {
+            const data = await resp.json();
+            const road = data.address?.road || data.address?.suburb || data.address?.neighbourhood || '';
+            const city = data.address?.city || data.address?.town || data.address?.county || 'Coimbatore';
+            userCurrentLandmark = road ? `${road}, ${city} (±${acc}m)` : `${(data.display_name || '').split(',').slice(0, 3).join(',')} (±${acc}m)`;
+          } else {
             userCurrentLandmark = `Live Spot: ${userCurrentLat.toFixed(5)}, ${userCurrentLon.toFixed(5)} (±${acc}m)`;
           }
-
-          if (locInput) locInput.value = userCurrentLandmark;
-
-          if (isManual) {
-            alert(`✅ Accurate GPS Spot Found!\nLatitude: ${userCurrentLat.toFixed(5)}\nLongitude: ${userCurrentLon.toFixed(5)}\nAccuracy: ±${acc}m\n\nSpot: ${userCurrentLandmark}`);
-          }
-        },
-        (err) => {
-          console.warn("GPS error:", err);
-          if (locInput) locInput.value = "Malumichampatti Bus Stop, Pollachi Main Rd";
-          if (isManual) {
-            alert("Could not read GPS location. Please turn ON Location/GPS on your phone and allow location permission.");
-          }
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 0
+        } catch (e) {
+          userCurrentLandmark = `Live Spot: ${userCurrentLat.toFixed(5)}, ${userCurrentLon.toFixed(5)} (±${acc}m)`;
         }
-      );
+
+        if (locInput) locInput.value = userCurrentLandmark;
+        localStorage.setItem('saved_customer_location', userCurrentLandmark);
+
+        if (isManual) {
+          alert(`✅ Phone GPS Found!\n\nLatitude: ${userCurrentLat.toFixed(5)}\nLongitude: ${userCurrentLon.toFixed(5)}\nAccuracy: ±${acc}m\n\nSpot: ${userCurrentLandmark}`);
+        }
+      };
+
+      const onGpsError = async (err) => {
+        console.warn("Phone GPS error:", err);
+        if (badge) {
+          badge.innerHTML = `<span class="text-amber-400">⚠️ GPS Signal Weak. Resolving by Network...</span>`;
+        }
+        // Fallback: IP Geolocation
+        try {
+          const ipRes = await fetch('https://ipapi.co/json/');
+          if (ipRes.ok) {
+            const ipData = await ipRes.json();
+            if (ipData.latitude && ipData.longitude) {
+              userCurrentLat = ipData.latitude;
+              userCurrentLon = ipData.longitude;
+              userCurrentLandmark = `${ipData.city || 'Coimbatore'}, ${ipData.region || 'Tamil Nadu'}`;
+              if (locInput && !locInput.value) locInput.value = userCurrentLandmark;
+              if (badge) badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald"></span> Network Area: ${userCurrentLandmark}`;
+              if (mapsLink) {
+                mapsLink.href = `https://www.google.com/maps?q=${userCurrentLat},${userCurrentLon}`;
+                mapsLink.classList.remove('hidden');
+              }
+            }
+          }
+        } catch(e){}
+
+        if (isManual && err.code === 1) {
+          alert("⚠️ Location Permission Needed:\n1. Pull down your phone's notification bar and turn ON Location/GPS.\n2. Tap the lock icon 🔒 in Chrome's URL bar, tap 'Permissions' -> set Location to 'Allow'.\n3. Tap 'Auto-Detect My Phone GPS' again.");
+        }
+      };
+
+      navigator.geolocation.getCurrentPosition(onGpsSuccess, onGpsError, {
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 0
+      });
+
+      // Keep watching for high accuracy fix
+      gpsWatchId = navigator.geolocation.watchPosition(onGpsSuccess, null, {
+        enableHighAccuracy: true,
+        maximumAge: 5000
+      });
     }
 
     // ================= LIVE PRICING & LOCAL PERSISTENCE =================
@@ -742,6 +829,26 @@
       night_surge_multiplier: 1.25,
       night_surge_enabled: false
     };
+
+    function updateMainButtonLabel() {
+      const selectedService = document.querySelector('input[name="service"]:checked')?.value || 'mechanic';
+      const selectedPayMode = document.querySelector('input[name="pay_mode"]:checked')?.value || 'razorpay';
+      
+      let fee = livePricing.mechanic_base_fee;
+      if (selectedService === 'towing') fee = livePricing.towing_base_fee;
+      if (selectedService === 'fuel_delivery') fee = livePricing.fuel_delivery_service_fee;
+
+      const label = document.getElementById('mainBtnLabel');
+      if (!label) return;
+
+      if (selectedPayMode === 'razorpay') {
+        label.innerText = `PAY ₹${fee} VIA RAZORPAY & REQUEST HELP`;
+      } else if (selectedPayMode === 'upi') {
+        label.innerText = `PAY ₹${fee} VIA DIRECT UPI & REQUEST HELP`;
+      } else {
+        label.innerText = `REQUEST HELP NOW (PAY ₹${fee} ON ARRIVAL)`;
+      }
+    }
 
     function applyPricingToUI(pricing) {
       if (!pricing) return;
@@ -758,6 +865,8 @@
       if (document.getElementById('admFuelFee')) document.getElementById('admFuelFee').value = pricing.fuel_delivery_service_fee;
       if (document.getElementById('admCommission')) document.getElementById('admCommission').value = pricing.platform_commission_percent;
       if (document.getElementById('admSurge')) document.getElementById('admSurge').value = pricing.night_surge_multiplier;
+
+      updateMainButtonLabel();
     }
 
     async function loadLivePricing() {
@@ -808,12 +917,37 @@
           body: JSON.stringify(payload)
         });
         if (res.ok) {
-          alert(`✅ SUCCESS! Live prices saved & locked in permanently!\n\nVisiting Fee: ₹${payload.mechanic_base_fee}\nTowing Fee: ₹${payload.towing_base_fee}\n\nThis pricing will stay active even after refreshing or reopening the app.`);
+          alert(`✅ SUCCESS! Live prices saved & locked in permanently!\n\nVisiting Fee: ₹${payload.mechanic_base_fee}\nTowing Fee: ₹${payload.towing_base_fee}\n\nThis pricing will stay active permanently across all phone refreshes.`);
         } else {
           alert(`Pricing saved in browser! (Server status: ${res.statusText})`);
         }
       } catch (err) {
         alert("Pricing saved in browser! (Offline persistent mode)");
+      }
+    }
+
+    // ================= PERSISTENT BANK DETAILS =================
+    function saveBankDetails() {
+      const data = {
+        bankName: document.getElementById('bankName').value.trim(),
+        bankAccNo: document.getElementById('bankAccNo').value.trim(),
+        bankIfsc: document.getElementById('bankIfsc').value.trim(),
+        bankUpi: document.getElementById('bankUpi').value.trim()
+      };
+      localStorage.setItem('saved_bank_details', JSON.stringify(data));
+      alert("✅ Settlement Bank Details Saved Permanently!\nAll payout and account details are preserved across browser refreshes.");
+    }
+
+    function loadSavedBankDetails() {
+      const saved = localStorage.getItem('saved_bank_details');
+      if (saved) {
+        try {
+          const b = JSON.parse(saved);
+          if (b.bankName && document.getElementById('bankName')) document.getElementById('bankName').value = b.bankName;
+          if (b.bankAccNo && document.getElementById('bankAccNo')) document.getElementById('bankAccNo').value = b.bankAccNo;
+          if (b.bankIfsc && document.getElementById('bankIfsc')) document.getElementById('bankIfsc').value = b.bankIfsc;
+          if (b.bankUpi && document.getElementById('bankUpi')) document.getElementById('bankUpi').value = b.bankUpi;
+        } catch(e){}
       }
     }
 
@@ -894,6 +1028,7 @@
         document.getElementById('tab-admin').classList.add('text-amber-400');
         document.getElementById('tab-admin').classList.remove('text-gray-400');
         loadLivePricing();
+        loadSavedBankDetails();
         loadAdminPartners();
       } else if (tabName === 'register') {
         document.getElementById('registerScreen').classList.remove('hidden');
@@ -916,19 +1051,48 @@
         card.querySelector('.w-12').classList.add('bg-swiggy/20', 'text-swiggy');
         card.querySelector('.w-12').classList.remove('bg-gray-800', 'text-gray-300');
         card.querySelector('input').checked = true;
+        updateMainButtonLabel();
       });
     });
 
+    // Payment mode selection styling
+    document.querySelectorAll('.pay-option-card').forEach(card => {
+      card.addEventListener('click', () => {
+        document.querySelectorAll('.pay-option-card').forEach(c => {
+          c.classList.remove('border-swiggy', 'border-2');
+          c.classList.add('border-gray-700');
+        });
+        card.classList.add('border-swiggy', 'border-2');
+        card.classList.remove('border-gray-700');
+        card.querySelector('input').checked = true;
+        updateMainButtonLabel();
+      });
+    });
+
+    // Save phone and landmark on typing
+    document.getElementById('customerPhone')?.addEventListener('input', (e) => {
+      localStorage.setItem('saved_customer_phone', e.target.value.trim());
+    });
+    document.getElementById('customerLocation')?.addEventListener('input', (e) => {
+      localStorage.setItem('saved_customer_location', e.target.value.trim());
+    });
+
     // ================= PAYMENT CHECKOUT & BOOKING =================
-    function requestHelpNow() {
-      const serviceType = document.querySelector('input[name="service"]:checked').value;
+    async function requestHelpNow() {
+      const serviceType = document.querySelector('input[name="service"]:checked')?.value || 'mechanic';
+      const payMode = document.querySelector('input[name="pay_mode"]:checked')?.value || 'razorpay';
       const phone = document.getElementById('customerPhone').value.trim();
       const landmark = document.getElementById('customerLocation').value.trim();
 
-      if (!phone) {
-        alert("Please enter your mobile number!");
+      if (!phone || phone.length < 10) {
+        alert("Please enter a valid 10-digit mobile number!");
+        document.getElementById('customerPhone').focus();
         return;
       }
+
+      // Auto-save user inputs
+      localStorage.setItem('saved_customer_phone', phone);
+      localStorage.setItem('saved_customer_location', landmark);
 
       let fee = livePricing.mechanic_base_fee;
       if (serviceType === 'towing') fee = livePricing.towing_base_fee;
@@ -941,73 +1105,116 @@
         longitude: userCurrentLon,
         landmark: landmark || userCurrentLandmark || "Malumichampatti, Coimbatore",
         zone_name: "Malumichampatti",
-        fee: fee
+        fee: fee,
+        pay_mode: payMode
       };
 
-      document.getElementById('payAmountDisplay').innerText = '₹' + fee;
-      document.getElementById('paymentModal').classList.remove('hidden');
+      if (payMode === 'razorpay') {
+        await initiateRazorpayCheckout();
+      } else if (payMode === 'upi') {
+        initiateDirectUpi();
+      } else {
+        // Cash / UPI on arrival
+        await executeBookingCreation('Pay on Arrival (Cash/UPI)');
+      }
     }
 
-    function closePaymentModal() {
-      document.getElementById('paymentModal').classList.add('hidden');
-    }
-
-    // 1. Razorpay Gateway Checkout (Cards / UPI / Netbanking)
-    function payWithRazorpay() {
+    // 1. Razorpay Gateway Checkout with Backend Order ID
+    async function initiateRazorpayCheckout() {
       if (!pendingBookingData) return;
       const fee = pendingBookingData.fee;
       const phone = pendingBookingData.customer_phone;
 
-      const options = {
-        "key": "rzp_test_Ta1ycvwfUQi3b2",
-        "amount": Math.round(fee * 100), // in paise (e.g. ₹1 = 100 paise)
-        "currency": "INR",
-        "name": "Roadside Assistance Coimbatore",
-        "description": "Visiting & Inspection Fee",
-        "image": "https://cdn-icons-png.flaticon.com/512/3202/3202926.png",
-        "handler": async function (response) {
-          closePaymentModal();
-          await executeBookingCreation('Razorpay (Txn: ' + response.razorpay_payment_id + ')');
-        },
-        "prefill": {
-          "contact": phone
-        },
-        "theme": {
-          "color": "#FC8019"
-        }
-      };
+      const btn = document.getElementById('requestBtn');
+      const origHtml = btn.innerHTML;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> PREPARING SECURE CHECKOUT...';
+      btn.disabled = true;
 
       try {
-        const rzp = new Razorpay(options);
-        rzp.on('payment.failed', function (resp){
-          alert("Payment failed: " + (resp.error?.description || "Cancelled"));
-        });
-        rzp.open();
+        let orderId = `order_${Date.now()}`;
+        try {
+          const ordRes = await fetch('/api/v1/payments/create-order', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              request_id: `req_${Date.now()}`,
+              amount: fee,
+              customer_phone: phone
+            })
+          });
+          if (ordRes.ok) {
+            const ordData = await ordRes.json();
+            if (ordData.order_id) orderId = ordData.order_id;
+          }
+        } catch(e){
+          console.warn("Create order API note:", e);
+        }
+
+        const options = {
+          key: "rzp_test_Ta1ycvwfUQi3b2",
+          amount: Math.round(fee * 100), // in paise (e.g. ₹1 = 100 paise)
+          currency: "INR",
+          name: "Roadside Assistance Coimbatore",
+          description: "Visiting & Inspection Fee",
+          order_id: orderId,
+          image: "https://cdn-icons-png.flaticon.com/512/3202/3202926.png",
+          handler: async function (response) {
+            console.log("Razorpay payment success:", response);
+            await executeBookingCreation('Razorpay (Txn: ' + response.razorpay_payment_id + ')');
+          },
+          prefill: {
+            contact: phone
+          },
+          theme: {
+            color: "#FC8019"
+          },
+          modal: {
+            ondismiss: function() {
+              btn.innerHTML = origHtml;
+              btn.disabled = false;
+            }
+          }
+        };
+
+        if (typeof Razorpay !== 'undefined') {
+          const rzp = new Razorpay(options);
+          rzp.on('payment.failed', function (resp){
+            alert("Payment failed: " + (resp.error?.description || "Cancelled"));
+            btn.innerHTML = origHtml;
+            btn.disabled = false;
+          });
+          rzp.open();
+        } else {
+          alert("Razorpay checkout unavailable. Switching to Direct UPI.");
+          initiateDirectUpi();
+        }
       } catch (err) {
         console.error("Razorpay open error:", err);
-        alert("Could not load Razorpay. You can also use Direct UPI App or Pay on Arrival.");
+        alert("Payment initialization error: " + err.message + ". Switching to Direct UPI.");
+        initiateDirectUpi();
+      } finally {
+        btn.innerHTML = origHtml;
+        btn.disabled = false;
       }
     }
 
     // 2. Direct UPI App (PhonePe / GPay / Paytm)
-    function payWithDirectUpi() {
+    function initiateDirectUpi() {
       if (!pendingBookingData) return;
       const fee = pendingBookingData.fee;
-      const upiUrl = `upi://pay?pa=malumichampatti.roadside@upi&pn=RoadsideAssistance&am=${fee}&cu=INR&tn=Roadside%20Assistance%20Visiting%20Fee`;
+      const upiId = (document.getElementById('bankUpi') && document.getElementById('bankUpi').value) || "malumichampatti.roadside@upi";
+      const upiUrl = `upi://pay?pa=${upiId}&pn=RoadsideAssistance&am=${fee}&cu=INR&tn=Visiting%20Fee`;
       window.location.href = upiUrl;
 
       setTimeout(() => {
         if (confirm(`Did you complete your UPI payment of ₹${fee} on PhonePe/GPay?`)) {
-          closePaymentModal();
           executeBookingCreation('Direct UPI');
         }
       }, 1500);
     }
 
-    // 3. Pay to Mechanic Directly on Arrival
-    function payCashOnArrival() {
-      closePaymentModal();
-      executeBookingCreation('Pay to Mechanic on Arrival (Cash/UPI)');
+    function closePaymentModal() {
+      document.getElementById('paymentModal').classList.add('hidden');
     }
 
     // Booking Creation and State Dispatch
@@ -1418,10 +1625,23 @@
       // 1. Immediately restore cached admin pricing (e.g. ₹1)
       loadLivePricing();
 
-      // 2. Query real GPS coordinates
+      // 2. Restore saved bank details in Admin tab
+      loadSavedBankDetails();
+
+      // 3. Restore saved customer phone and location
+      const savedPhone = localStorage.getItem('saved_customer_phone');
+      if (savedPhone && document.getElementById('customerPhone')) {
+        document.getElementById('customerPhone').value = savedPhone;
+      }
+      const savedLoc = localStorage.getItem('saved_customer_location');
+      if (savedLoc && document.getElementById('customerLocation')) {
+        document.getElementById('customerLocation').value = savedLoc;
+      }
+
+      // 4. Query real phone GPS coordinates
       detectUserGpsLocation(false);
 
-      // 3. Restore active tracking session if user refreshed while order was in progress
+      // 5. Restore active tracking session if user refreshed while order was in progress
       const savedSession = localStorage.getItem('active_tracking_session');
       if (savedSession) {
         try {
@@ -1433,8 +1653,13 @@
         } catch(e){}
       }
 
-      // 4. Start partner alert polling
+      // 6. Start partner alert polling
       startPartnerJobListener();
+
+      // 7. Render Keep-Awake Heartbeat (pings server every 4 minutes so Render never sleeps while user is on app!)
+      setInterval(() => {
+        fetch('/api/v1/pricing', { cache: 'no-store' }).catch(() => {});
+      }, 4 * 60 * 1000);
     };
   </script>
 </body>
