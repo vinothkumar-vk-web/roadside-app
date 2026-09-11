@@ -19,7 +19,7 @@
   <!-- Instant Cache-Buster & PWA Purge on Version Update -->
   <script>
     (function() {
-      const APP_VERSION = 'v5.5-portal-fixed';
+      const APP_VERSION = 'v5.6-upi-vinoth';
       if (localStorage.getItem('installed_app_ver') !== APP_VERSION) {
         localStorage.setItem('installed_app_ver', APP_VERSION);
         if ('caches' in window) {
@@ -31,8 +31,8 @@
           });
         }
         // Force refresh to reload newest HTML from server
-        if (location.search.indexOf('v=5.5') === -1) {
-          location.replace(location.pathname + '?v=5.5');
+        if (location.search.indexOf('v=5.6') === -1) {
+          location.replace(location.pathname + '?v=5.6');
         }
       }
     })();
@@ -671,8 +671,8 @@
             </div>
           </div>
           <div>
-            <label class="text-[11px] font-bold text-gray-300 block mb-1">Direct Business UPI ID (GPay / PhonePe)</label>
-            <input id="bankUpi" type="text" placeholder="e.g. yourname@okaxis / yourphone@upi" value="" class="w-full bg-darkbg border border-gray-700 rounded-xl px-3 py-2 text-xs text-emerald font-mono font-bold outline-none focus:border-emerald">
+            <label class="text-[11px] font-bold text-gray-300 block mb-1">Direct Business UPI ID (GPay / PhonePe / Paytm)</label>
+            <input id="bankUpi" type="text" placeholder="e.g. 9962312573@pthdfc" value="9962312573@pthdfc" class="w-full bg-darkbg border border-gray-700 rounded-xl px-3 py-2 text-xs text-emerald font-mono font-bold outline-none focus:border-emerald">
           </div>
         </div>
 
@@ -1133,6 +1133,10 @@
           if (b.bankUpi && document.getElementById('bankUpi')) document.getElementById('bankUpi').value = b.bankUpi;
         } catch(e){}
       }
+      const upiField = document.getElementById('bankUpi');
+      if (upiField && (!upiField.value || upiField.value.includes('ybl') || upiField.value.includes('yourname'))) {
+        upiField.value = '9962312573@pthdfc';
+      }
     }
 
     async function loadAdminPartners() {
@@ -1496,24 +1500,40 @@
       if (!pendingBookingData) return;
       const fee = pendingBookingData.fee;
       let upiId = document.getElementById('bankUpi')?.value.trim();
-      if (!upiId) {
+      if (!upiId || upiId.includes('ybl') || upiId.includes('yourname')) {
         const saved = localStorage.getItem('saved_bank_details');
         if (saved) {
           try { upiId = JSON.parse(saved).bankUpi; } catch(e){}
         }
       }
-      if (!upiId) {
-        upiId = "7540021997@ybl";
+      if (!upiId || upiId.includes('ybl') || upiId.includes('yourname')) {
+        upiId = "9962312573@pthdfc";
       }
+      const payeeName = "Vinoth Kumar";
       const note = encodeURIComponent(`Visiting Fee ${pendingBookingData.customer_phone}`);
-      const upiUrl = `upi://pay?pa=${upiId}&pn=RoadsideAssistance&am=${fee}&cu=INR&tn=${note}`;
+      const upiUrl = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(payeeName)}&am=${fee}&cu=INR&tn=${note}`;
       window.location.href = upiUrl;
 
       setTimeout(() => {
-        if (confirm(`Did you complete your UPI payment of ₹${fee} to ${upiId} on PhonePe/GPay?`)) {
+        if (confirm(`Did you complete your UPI payment of ₹${fee} to ${payeeName} (${upiId}) on PhonePe/GPay?`)) {
           executeBookingCreation(`Direct UPI (${upiId})`);
         }
       }, 1500);
+    }
+
+    function payWithDirectUpi() {
+      closePaymentModal();
+      initiateDirectUpi();
+    }
+
+    function payWithRazorpay() {
+      closePaymentModal();
+      initiateRazorpayCheckout();
+    }
+
+    function payCashOnArrival() {
+      closePaymentModal();
+      executeBookingCreation('Pay on Arrival (Cash/UPI)');
     }
 
     function closePaymentModal() {
