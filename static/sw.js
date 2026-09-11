@@ -1,45 +1,36 @@
-// Service Worker for Standalone App - Instant Open & Zero Cache Lag
-const CACHE_NAME = 'roadside-app-v4-otp';
-const ASSETS_TO_CACHE = [
-  '/',
-  '/manifest.json'
-];
+// Standalone Service Worker - Zero Cache Lag, Live Network Always
+const CACHE_NAME = 'roadside-app-v5-live';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS_TO_CACHE))
-  );
 });
 
 self.addEventListener('activate', (event) => {
+  // Purge ALL caches from all previous versions!
   event.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
-        keys.map((k) => {
-          if (k !== CACHE_NAME) return caches.delete(k);
-        })
+        keys.map((k) => caches.delete(k))
       );
     }).then(() => self.clients.claim())
   );
 });
 
 self.addEventListener('fetch', (event) => {
-  // API and WebSocket requests: always bypass cache directly to network
-  if (event.request.url.includes('/api/') || event.request.url.includes('/ws/')) {
-    return event.respondWith(fetch(event.request));
+  // HTML navigation & API calls: ALWAYS bypass cache and fetch live from server
+  if (event.request.mode === 'navigate' || event.request.url.includes('/api/') || event.request.url.includes('/ws/')) {
+    event.respondWith(
+      fetch(event.request, { cache: 'no-store' }).catch(() => {
+        return new Response('Network offline. Please check your internet.', {
+          headers: { 'Content-Type': 'text/plain' }
+        });
+      })
+    );
+    return;
   }
 
-  // Network-First with Cache Fallback for instant app opening
+  // All other assets: Network first
   event.respondWith(
-    fetch(event.request)
-      .then((response) => {
-        if (response && response.status === 200) {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-        }
-        return response;
-      })
-      .catch(() => caches.match(event.request))
+    fetch(event.request).catch(() => caches.match(event.request))
   );
 });

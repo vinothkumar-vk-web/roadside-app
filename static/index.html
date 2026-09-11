@@ -16,6 +16,28 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
 
+  <!-- Instant Cache-Buster & PWA Purge on Version Update -->
+  <script>
+    (function() {
+      const APP_VERSION = 'v5.3-nocache-pin';
+      if (localStorage.getItem('installed_app_ver') !== APP_VERSION) {
+        localStorage.setItem('installed_app_ver', APP_VERSION);
+        if ('caches' in window) {
+          caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k))));
+        }
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(regs => {
+            for (let r of regs) r.unregister();
+          });
+        }
+        // Force refresh to reload newest HTML from server
+        if (location.search.indexOf('v=5.3') === -1) {
+          location.replace(location.pathname + '?v=5.3');
+        }
+      }
+    })();
+  </script>
+
   <!-- Tailwind CSS & FontAwesome & Razorpay -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -96,11 +118,14 @@
       </div>
     </div>
     <div class="flex items-center gap-2">
-      <button onclick="window.location.reload(true)" title="Instant Sync" class="bg-cardbg border border-gray-700 hover:border-swiggy text-gray-300 w-8 h-8 rounded-full flex items-center justify-center text-xs active:rotate-180 transition-transform">
+      <button onclick="forceHardSync()" title="Force Cache Purge & Refresh" class="bg-cardbg border border-gray-700 hover:border-swiggy text-gray-300 w-8 h-8 rounded-full flex items-center justify-center text-xs active:rotate-180 transition-transform">
         <i class="fa-solid fa-rotate text-swiggy"></i>
       </button>
-      <span class="bg-emerald/15 text-emerald border border-emerald/30 px-2.5 py-1 rounded-full text-[10px] font-black">
-        <i class="fa-solid fa-shield-halved mr-1"></i> LIVE
+      <button onclick="promptAdminLogin()" title="Owner Admin Access (PIN Required)" class="bg-cardbg border border-gray-700 hover:border-amber-400 text-gray-400 hover:text-amber-400 w-8 h-8 rounded-full flex items-center justify-center text-xs active:scale-95 transition">
+        <i class="fa-solid fa-lock text-[10px]"></i>
+      </button>
+      <span class="bg-emerald/15 text-emerald border border-emerald/30 px-2 py-1 rounded-full text-[10px] font-black">
+        <i class="fa-solid fa-shield-halved mr-0.5"></i> LIVE
       </span>
     </div>
   </header>
@@ -733,11 +758,6 @@
       <span class="text-[10px] font-black">Mechanic</span>
     </button>
 
-    <button onclick="switchTab('admin')" class="tab-btn flex flex-col items-center gap-1 text-gray-400 hover:text-amber-400 p-1" id="tab-admin">
-      <i class="fa-solid fa-crown text-base"></i>
-      <span class="text-[10px] font-black">Admin</span>
-    </button>
-
     <button onclick="switchTab('register')" class="tab-btn flex flex-col items-center gap-1 text-gray-400 hover:text-gray-200 p-1" id="tab-register">
       <i class="fa-solid fa-id-card text-base"></i>
       <span class="text-[10px] font-black">Register</span>
@@ -1169,6 +1189,30 @@
       }
     }
 
+    // ================= OWNER PIN AUTH & CACHE PURGE =================
+    function promptAdminLogin() {
+      const pin = prompt("🔐 Enter Master Admin 4-Digit PIN to access Admin Control:");
+      if (pin === "9962") {
+        alert("✅ Master Admin PIN Verified! Opening Control Panel...");
+        switchTab('admin');
+      } else if (pin !== null) {
+        alert("❌ Access Denied: Incorrect Master Admin PIN!");
+      }
+    }
+
+    function forceHardSync() {
+      if ('caches' in window) {
+        caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k))));
+      }
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(regs => {
+          for (let r of regs) r.unregister();
+        });
+      }
+      localStorage.removeItem('installed_app_ver');
+      location.href = location.pathname + '?sync=' + Date.now();
+    }
+
     // ================= TAB NAVIGATION =================
     function switchTab(tabName) {
       document.getElementById('customerScreen').classList.add('hidden');
@@ -1458,6 +1502,24 @@
         showPersistentOrderBar(activeTrackingSession);
         showTrackingScreen();
         startLiveTracking(activeRequestId, pendingBookingData.fee, activeTrackingSession);
+
+        // AUTO-DISPATCH NOTIFICATION TO MECHANIC (+91 7540021997)
+        try {
+          const pPhone = activeTrackingSession.partner?.phone || "7540021997";
+          const customerLandmark = pendingBookingData.landmark || "Malumichampatti, Coimbatore";
+          const gmapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${pendingBookingData.latitude},${pendingBookingData.longitude}`;
+          const acceptUrl = `${window.location.origin}/api/v1/requests/${activeRequestId}/accept?partner_id=8d62b3cc-1b72-4693-b9e7-dcad5782339d`;
+          const prob = pendingBookingData.problem_description || "Emergency Breakdown";
+          const feeVal = pendingBookingData.fee;
+          const waMsg = encodeURIComponent(`🚨 அவசர உதவி தேவை (Roadside Emergency)!\n👤 Customer: +91 ${pendingBookingData.customer_phone}\n🛠️ Problem: ${prob}\n📍 இடம்: ${customerLandmark}\n💰 Visiting Fee: ₹${feeVal} (${paymentMethod})\n🗺️ Google Maps வழி: ${gmapsUrl}\n⚡ Accept செய்ய லிங்க்: ${acceptUrl}`);
+          const waUrl = `https://wa.me/91${pPhone}?text=${waMsg}`;
+          
+          setTimeout(() => {
+            window.open(waUrl, '_blank');
+          }, 1200);
+        } catch(e){
+          console.error("Auto WhatsApp dispatch err:", e);
+        }
       } catch (err) {
         alert("Dispatch error: " + err.message);
       } finally {
