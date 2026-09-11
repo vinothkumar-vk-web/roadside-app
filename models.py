@@ -28,6 +28,7 @@ class RequestStatus(str, enum.Enum):
     VOICE_ESCALATED = "voice_escalated"
     SMS_ESCALATED = "sms_escalated"
     ACCEPTED = "accepted"
+    REACHED_SPOT = "reached_spot"
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
     CANCELLED = "cancelled"
@@ -92,6 +93,10 @@ class AssistanceRequest(Base):
     customer_latitude = Column(Float, nullable=False)
     customer_longitude = Column(Float, nullable=False)
     landmark = Column(String(255), nullable=True)
+    problem_description = Column(String(500), nullable=True)
+    completion_otp = Column(String(6), nullable=True)
+    reached_spot_at = Column(DateTime, nullable=True)
+    payment_method = Column(String(50), default="upi")
     
     assigned_partner_id = Column(String, ForeignKey("partners.id"), nullable=True)
     status = Column(SQLEnum(RequestStatus), default=RequestStatus.REQUESTED)
@@ -135,7 +140,12 @@ class ServiceRequestCreate(BaseModel):
     latitude: float
     longitude: float
     landmark: Optional[str] = None
+    problem_description: Optional[str] = None
+    payment_method: Optional[str] = "upi"
     zone_name: str = "Malumichampatti"
+
+class VerifyOtpRequest(BaseModel):
+    otp: str
 
 class AdminVerifyPartnerRequest(BaseModel):
     partner_id: str

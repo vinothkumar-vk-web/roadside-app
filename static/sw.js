@@ -1,5 +1,5 @@
 // Service Worker for Standalone App - Instant Open & Zero Cache Lag
-const CACHE_NAME = 'roadside-app-v3-live';
+const CACHE_NAME = 'roadside-app-v4-otp';
 const ASSETS_TO_CACHE = [
   '/',
   '/manifest.json'

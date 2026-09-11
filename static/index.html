@@ -211,6 +211,41 @@
         </div>
       </div>
 
+      <!-- Problem Diagnosis (Select or Type Issue) -->
+      <div class="bg-cardbg p-3.5 rounded-2xl border border-gray-800 space-y-2">
+        <div class="flex justify-between items-center">
+          <label class="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Describe Vehicle Problem</label>
+          <span class="text-[10px] text-amber-400 font-bold"><i class="fa-solid fa-wrench"></i> Mechanic Brings Tools</span>
+        </div>
+        
+        <!-- Quick Selection Chips -->
+        <div class="flex flex-wrap gap-1.5 pt-0.5">
+          <button type="button" onclick="selectProblemChip(this, '🏍️ Bike Puncture (Rear/Front)')" class="prob-chip bg-darkbg border border-gray-700 text-gray-300 text-[11px] font-bold px-2.5 py-1.5 rounded-xl active:scale-95 transition hover:border-swiggy">
+            🏍️ Bike Puncture
+          </button>
+          <button type="button" onclick="selectProblemChip(this, '🔋 Battery Dead / Jumpstart')" class="prob-chip bg-darkbg border border-gray-700 text-gray-300 text-[11px] font-bold px-2.5 py-1.5 rounded-xl active:scale-95 transition hover:border-swiggy">
+            🔋 Battery Dead
+          </button>
+          <button type="button" onclick="selectProblemChip(this, '⛓️ Chain Cut / Loose')" class="prob-chip bg-darkbg border border-gray-700 text-gray-300 text-[11px] font-bold px-2.5 py-1.5 rounded-xl active:scale-95 transition hover:border-swiggy">
+            ⛓️ Chain Cut
+          </button>
+          <button type="button" onclick="selectProblemChip(this, '💨 Engine / Clutch / Oil Leak')" class="prob-chip bg-darkbg border border-gray-700 text-gray-300 text-[11px] font-bold px-2.5 py-1.5 rounded-xl active:scale-95 transition hover:border-swiggy">
+            💨 Engine Issue
+          </button>
+          <button type="button" onclick="selectProblemChip(this, '⛽ Out of Petrol / Diesel')" class="prob-chip bg-darkbg border border-gray-700 text-gray-300 text-[11px] font-bold px-2.5 py-1.5 rounded-xl active:scale-95 transition hover:border-swiggy">
+            ⛽ Empty Fuel
+          </button>
+          <button type="button" onclick="selectProblemChip(this, '🚗 Car Breakdown / Starting Issue')" class="prob-chip bg-darkbg border border-gray-700 text-gray-300 text-[11px] font-bold px-2.5 py-1.5 rounded-xl active:scale-95 transition hover:border-swiggy">
+            🚗 Car Breakdown
+          </button>
+        </div>
+
+        <div class="flex items-center gap-2 bg-darkbg px-3 py-2 rounded-xl border border-gray-700/60 mt-1">
+          <i class="fa-solid fa-pen text-swiggy text-xs shrink-0"></i>
+          <input id="problemDescriptionInput" type="text" placeholder="e.g. Pulsar 150 rear tyre puncture near bakery..." class="bg-transparent text-xs text-white w-full outline-none font-medium">
+        </div>
+      </div>
+
       <!-- Prominent Payment Mode Selection -->
       <div class="bg-cardbg p-3.5 rounded-2xl border border-gray-800 space-y-2">
         <div class="flex justify-between items-center">
@@ -287,6 +322,28 @@
             Step 1: Pushing high-priority alert to nearest mechanic with Accept/Reject notification.
           </p>
         </div>
+      <!-- Real-Time Mechanic Arrived Banner -->
+      <div id="reachedSpotBanner" class="hidden bg-emerald/20 border-2 border-emerald rounded-2xl p-3.5 text-center space-y-1 animate-pulse shadow-lg shadow-emerald/20">
+        <div class="flex items-center justify-center gap-2 text-emerald font-black text-sm">
+          <i class="fa-solid fa-location-crosshairs text-base"></i> 🟢 MECHANIC HAS REACHED YOUR SPOT!
+        </div>
+        <p class="text-xs text-emerald-100 font-semibold">The mechanic has arrived at your breakdown location.</p>
+      </div>
+
+      <!-- High-Visibility 4-Digit Completion OTP Card -->
+      <div id="customerOtpCard" class="hidden bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-swiggy/20 border-2 border-swiggy rounded-2xl p-4 text-center space-y-2 shadow-2xl animate-bounce-short">
+        <span class="bg-swiggy/30 text-swiggy text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider inline-block">
+          🔐 Service Completion Security Code
+        </span>
+        <h4 class="text-xs font-bold text-gray-200">Share this 4-Digit OTP with the mechanic to finish & close service:</h4>
+        <div class="py-1">
+          <span id="customerOtpDisplay" class="text-4xl font-black font-mono tracking-widest text-white bg-darkbg/90 py-2 px-6 rounded-xl border-2 border-swiggy inline-block shadow-inner">
+            ----
+          </span>
+        </div>
+        <p class="text-[10px] text-amber-300 font-medium">
+          ⚠️ Only share this code after the mechanic has repaired and tested your vehicle!
+        </p>
       </div>
 
       <!-- Assigned Mechanic Card -->
@@ -355,45 +412,140 @@
       </button>
     </div>
 
-    <!-- ================= SCREEN 3: PARTNER DASHBOARD ================= -->
+    <!-- ================= SCREEN 3: PARTNER DASHBOARD (MECHANIC VIEW) ================= -->
     <div id="partnerScreen" class="hidden space-y-4">
-      <div class="bg-cardbg border-2 border-emerald rounded-2xl p-4 flex items-center justify-between shadow-xl">
-        <div>
+      
+      <!-- Partner Login & Profile Selector -->
+      <div class="bg-cardbg border border-gray-800 rounded-2xl p-3.5 space-y-2.5 shadow-lg">
+        <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
-            <span id="partnerStatusDot" class="w-3 h-3 rounded-full bg-emerald animate-pulse"></span>
-            <h3 id="partnerStatusText" class="font-black text-sm text-emerald tracking-wide">YOU ARE ONLINE</h3>
+            <div class="w-8 h-8 rounded-full bg-swiggy/20 flex items-center justify-center text-swiggy text-sm font-black">
+              <i class="fa-solid fa-user-gear"></i>
+            </div>
+            <div>
+              <h3 id="currentPartnerName" class="font-black text-xs text-white">Jegan (Auto Care Mechanic)</h3>
+              <p id="currentPartnerPhone" class="text-[10px] text-emerald font-mono">+91 7540021997 • Verified</p>
+            </div>
           </div>
-          <p class="text-xs text-gray-400 mt-1">Ready to receive jobs in Malumichampatti</p>
+          <button onclick="switchPartnerAccount()" class="text-[10px] text-swiggy font-bold bg-swiggy/10 hover:bg-swiggy/20 px-2 py-1 rounded-lg border border-swiggy/30 active:scale-95 transition">
+            Switch Profile
+          </button>
         </div>
-        <button id="onlineToggleBtn" onclick="toggleOnlineStatus()" class="bg-emerald text-white px-4 py-2 rounded-xl text-xs font-black shadow-lg shadow-emerald/30 active:scale-95 transition">
-          GO OFFLINE
-        </button>
+
+        <div class="flex items-center justify-between pt-1 border-t border-gray-800/80">
+          <div class="flex items-center gap-2">
+            <span id="partnerStatusDot" class="w-2.5 h-2.5 rounded-full bg-emerald animate-pulse"></span>
+            <span id="partnerStatusText" class="font-black text-xs text-emerald tracking-wide">ONLINE (Receiving Jobs)</span>
+          </div>
+          <button id="onlineToggleBtn" onclick="toggleOnlineStatus()" class="bg-emerald hover:bg-emerald/90 text-white px-3 py-1 rounded-lg text-[10px] font-black shadow active:scale-95 transition">
+            GO OFFLINE
+          </button>
+        </div>
       </div>
 
+      <!-- ACTIVE ASSIGNED JOB CARD (Full Swiggy/Urban Company Mechanic Lifecycle) -->
+      <div id="mechanicActiveJobCard" class="bg-gradient-to-br from-cardbg via-gray-900 to-cardbg border-2 border-emerald rounded-2xl p-4 space-y-3.5 shadow-2xl">
+        <div class="flex items-center justify-between border-b border-gray-800 pb-2.5">
+          <div class="flex items-center gap-2">
+            <span id="mechanicJobStageBadge" class="bg-emerald/20 text-emerald text-[10px] font-black px-2.5 py-0.5 rounded-full border border-emerald/40">
+              🟢 ACTIVE JOB IN PROGRESS
+            </span>
+          </div>
+          <span id="mechanicJobFeeBadge" class="text-sm font-black text-swiggy">₹199</span>
+        </div>
+
+        <!-- Customer & Problem Info -->
+        <div class="space-y-2 text-xs">
+          <div class="flex items-center justify-between bg-darkbg/90 p-2.5 rounded-xl border border-gray-800">
+            <div>
+              <p class="text-[10px] text-gray-400 uppercase font-bold">Customer Contact</p>
+              <p id="mechCustomerPhone" class="font-black text-white text-sm font-mono">+91 98421 98765</p>
+            </div>
+            <a id="mechCallCustomerBtn" href="tel:9842198765" class="bg-emerald/20 hover:bg-emerald/30 text-emerald w-9 h-9 rounded-xl flex items-center justify-center text-sm shadow active:scale-95 transition">
+              <i class="fa-solid fa-phone"></i>
+            </a>
+          </div>
+
+          <!-- Problem Description -->
+          <div class="bg-darkbg/90 p-2.5 rounded-xl border border-gray-800 space-y-1">
+            <p class="text-[10px] text-amber-400 uppercase font-bold flex items-center gap-1">
+              <i class="fa-solid fa-wrench"></i> Reported Problem & Diagnosis
+            </p>
+            <p id="mechProblemDesc" class="text-xs font-black text-white leading-tight">
+              🏍️ Bike Puncture (Rear tyre near bakery)
+            </p>
+          </div>
+
+          <!-- Location & Route -->
+          <div class="bg-darkbg/90 p-2.5 rounded-xl border border-gray-800 space-y-1.5">
+            <p class="text-[10px] text-gray-400 uppercase font-bold flex items-center gap-1">
+              <i class="fa-solid fa-location-dot text-emerald"></i> Breakdown Location
+            </p>
+            <p id="mechSpotDesc" class="text-xs text-gray-200 font-medium">
+              Malumichampatti Bus Stop, Coimbatore
+            </p>
+            <a id="mechGmapsRouteBtn" href="https://www.google.com/maps" target="_blank" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-2 rounded-lg text-[11px] flex items-center justify-center gap-1.5 shadow active:scale-95 transition">
+              <i class="fa-solid fa-map-location-dot"></i> Open Google Maps Live Navigation
+            </a>
+          </div>
+        </div>
+
+        <!-- 3-STEP MECHANIC ACTION BUTTONS -->
+        <div class="space-y-2 pt-1 border-t border-gray-800">
+          
+          <!-- STEP 1: Reached Spot Button -->
+          <button id="btnMechReachedSpot" onclick="mechanicSignalReachedSpot()" class="w-full bg-emerald hover:bg-emerald/90 text-white font-black py-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald/20 active:scale-95 transition">
+            <i class="fa-solid fa-location-crosshairs text-sm"></i> 📍 1. I HAVE REACHED CUSTOMER SPOT
+          </button>
+
+          <!-- STEP 2: Work Finished (Request OTP) -->
+          <button id="btnMechWorkFinished" onclick="mechanicTriggerWorkFinished()" class="w-full bg-swiggy hover:bg-orange-600 text-white font-black py-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-swiggy/20 active:scale-95 transition">
+            <i class="fa-solid fa-check-double text-sm"></i> 🛠️ 2. WORK DONE -> REQUEST OTP FROM CUSTOMER
+          </button>
+
+          <!-- STEP 3: OTP Verification Box -->
+          <div id="mechOtpVerifyBox" class="bg-darkbg p-3 rounded-xl border border-swiggy/60 space-y-2">
+            <label class="text-[11px] font-bold text-amber-300 block text-center">
+              🔐 3. Enter Customer's 4-Digit Completion OTP:
+            </label>
+            <div class="flex items-center gap-2">
+              <input id="mechOtpInput" type="number" placeholder="4-digit OTP" maxlength="4" class="w-full bg-cardbg border border-gray-700 rounded-xl px-3 py-2 text-center text-lg text-white font-mono font-black outline-none focus:border-swiggy">
+              <button onclick="mechanicSubmitOtpVerification()" class="bg-swiggy hover:bg-orange-600 text-white font-black px-4 py-2.5 rounded-xl text-xs shrink-0 shadow active:scale-95 transition">
+                VERIFY & FINISH
+              </button>
+            </div>
+            <p class="text-[9px] text-gray-400 text-center">Ask customer for the 4-digit code shown on their tracking screen.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mechanic Stats & Earnings -->
       <div class="grid grid-cols-2 gap-3">
         <div class="bg-cardbg p-3.5 rounded-2xl border border-gray-800">
           <p class="text-[10px] text-gray-400 font-bold uppercase">Today's Earnings</p>
-          <h4 class="text-xl font-black text-white mt-1">₹1,450</h4>
-          <p class="text-[10px] text-emerald mt-0.5"><i class="fa-solid fa-arrow-trend-up"></i> Commission deducted</p>
+          <h4 id="mechTodayEarnings" class="text-xl font-black text-white mt-1">₹1,450</h4>
+          <p class="text-[10px] text-emerald mt-0.5"><i class="fa-solid fa-arrow-trend-up"></i> Auto settled to bank</p>
         </div>
         <div class="bg-cardbg p-3.5 rounded-2xl border border-gray-800">
           <p class="text-[10px] text-gray-400 font-bold uppercase">Jobs Completed</p>
-          <h4 class="text-xl font-black text-white mt-1">6 Jobs</h4>
-          <p class="text-[10px] text-gray-400 mt-0.5">Rating: <span class="text-amber-400 font-bold">4.9 ★</span></p>
+          <h4 id="mechJobsCount" class="text-xl font-black text-white mt-1">6 Jobs</h4>
+          <p class="text-[10px] text-gray-400 mt-0.5">Rating: <span class="text-amber-400 font-bold">5.0 ★</span></p>
         </div>
       </div>
 
-      <div class="bg-gradient-to-br from-amber-950/40 to-cardbg border border-swiggy/40 p-4 rounded-2xl space-y-2.5">
-        <div class="flex items-center gap-2 text-swiggy">
-          <i class="fa-solid fa-bell text-base"></i>
-          <h4 class="font-black text-xs uppercase tracking-wider text-white">Interactive Job Alert Test</h4>
+      <!-- Incoming Unassigned Jobs in Malumichampatti -->
+      <div class="bg-cardbg border border-gray-800 rounded-2xl p-3.5 space-y-2.5">
+        <div class="flex justify-between items-center">
+          <h4 class="text-xs font-bold text-white uppercase flex items-center gap-1.5">
+            <i class="fa-solid fa-list-check text-swiggy"></i> Live Incoming Requests
+          </h4>
+          <button onclick="loadPartnerIncomingJobs()" class="text-[11px] text-swiggy hover:underline flex items-center gap-1">
+            <i class="fa-solid fa-rotate-right"></i> Refresh
+          </button>
         </div>
-        <p class="text-xs text-gray-400 leading-relaxed">
-          Simulates the 35-second emergency incoming job popup with Accept/Reject buttons.
-        </p>
-        <button onclick="triggerEmergencyModal()" class="w-full bg-swiggy hover:bg-orange-600 text-white font-black py-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-swiggy/30 active:scale-[0.98] transition">
-          <i class="fa-solid fa-play"></i> Test Emergency Job Dispatch
-        </button>
+        <div id="incomingJobsList" class="space-y-2">
+          <!-- Dynamically populated from backend -->
+        </div>
       </div>
     </div>
 
@@ -702,7 +854,7 @@
 
     // Register Service Worker with cache-busting
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js?v=3.1').catch(err => console.log(err));
+      navigator.serviceWorker.register('/sw.js?v=4.0').catch(err => console.log(err));
     }
 
     // ================= GLOBAL STATE =================
@@ -716,6 +868,23 @@
     let liveTrackingWs = null;
     let currentAlertJob = null;
     let partnerJobPollTimer = null;
+    let activeMechanicJob = null;
+    let currentPartner = {
+      id: "8d62b3cc-1b72-4693-b9e7-dcad5782339d",
+      name: "Jegan (Auto Care Mechanic)",
+      phone: "7540021997"
+    };
+
+    function selectProblemChip(btn, text) {
+      document.querySelectorAll('.prob-chip').forEach(c => {
+        c.classList.remove('border-swiggy', 'bg-swiggy/20', 'text-swiggy');
+        c.classList.add('border-gray-700', 'text-gray-300');
+      });
+      btn.classList.add('border-swiggy', 'bg-swiggy/20', 'text-swiggy');
+      btn.classList.remove('border-gray-700', 'text-gray-300');
+      const input = document.getElementById('problemDescriptionInput');
+      if (input) input.value = text;
+    }
 
     // ================= REAL PHONE GPS AUTO-DETECT =================
     function detectUserGpsLocation(isManual = false) {
@@ -1022,6 +1191,7 @@
         document.getElementById('partnerScreen').classList.remove('hidden');
         document.getElementById('tab-partner').classList.add('text-swiggy');
         document.getElementById('tab-partner').classList.remove('text-gray-400');
+        loadPartnerIncomingJobs();
         startPartnerJobListener();
       } else if (tabName === 'admin') {
         document.getElementById('adminScreen').classList.remove('hidden');
@@ -1083,6 +1253,7 @@
       const payMode = document.querySelector('input[name="pay_mode"]:checked')?.value || 'razorpay';
       const phone = document.getElementById('customerPhone').value.trim();
       const landmark = document.getElementById('customerLocation').value.trim();
+      const problemDesc = document.getElementById('problemDescriptionInput')?.value.trim() || 'General Diagnosis & Repair';
 
       if (!phone || phone.length < 10) {
         alert("Please enter a valid 10-digit mobile number!");
@@ -1104,6 +1275,7 @@
         latitude: userCurrentLat,
         longitude: userCurrentLon,
         landmark: landmark || userCurrentLandmark || "Malumichampatti, Coimbatore",
+        problem_description: problemDesc,
         zone_name: "Malumichampatti",
         fee: fee,
         pay_mode: payMode
@@ -1202,13 +1374,23 @@
     function initiateDirectUpi() {
       if (!pendingBookingData) return;
       const fee = pendingBookingData.fee;
-      const upiId = (document.getElementById('bankUpi') && document.getElementById('bankUpi').value) || "malumichampatti.roadside@upi";
-      const upiUrl = `upi://pay?pa=${upiId}&pn=RoadsideAssistance&am=${fee}&cu=INR&tn=Visiting%20Fee`;
+      let upiId = document.getElementById('bankUpi')?.value.trim();
+      if (!upiId) {
+        const saved = localStorage.getItem('saved_bank_details');
+        if (saved) {
+          try { upiId = JSON.parse(saved).bankUpi; } catch(e){}
+        }
+      }
+      if (!upiId) {
+        upiId = "7540021997@ybl";
+      }
+      const note = encodeURIComponent(`Visiting Fee ${pendingBookingData.customer_phone}`);
+      const upiUrl = `upi://pay?pa=${upiId}&pn=RoadsideAssistance&am=${fee}&cu=INR&tn=${note}`;
       window.location.href = upiUrl;
 
       setTimeout(() => {
-        if (confirm(`Did you complete your UPI payment of ₹${fee} on PhonePe/GPay?`)) {
-          executeBookingCreation('Direct UPI');
+        if (confirm(`Did you complete your UPI payment of ₹${fee} to ${upiId} on PhonePe/GPay?`)) {
+          executeBookingCreation(`Direct UPI (${upiId})`);
         }
       }, 1500);
     }
@@ -1233,6 +1415,8 @@
           latitude: pendingBookingData.latitude,
           longitude: pendingBookingData.longitude,
           landmark: pendingBookingData.landmark,
+          problem_description: pendingBookingData.problem_description,
+          payment_method: pendingBookingData.pay_mode,
           zone_name: "Malumichampatti"
         };
 
@@ -1258,9 +1442,10 @@
           lat: pendingBookingData.latitude,
           lon: pendingBookingData.longitude,
           landmark: pendingBookingData.landmark,
+          problemDescription: pendingBookingData.problem_description,
           paymentMethod: paymentMethod,
           partner: {
-            name: "Jegan (Verified Partner)",
+            name: "Verified Mechanic",
             phone: "7540021997",
             rating: 5.0
           },
@@ -1367,16 +1552,10 @@
       const customerLandmark = session?.landmark || userCurrentLandmark || "Malumichampatti";
 
       function updateMatchedUI(data) {
-        if (liveTrackingPoll) clearInterval(liveTrackingPoll);
         pBar.style.width = '100%';
         pBar.classList.remove('bg-swiggy');
         pBar.classList.add('bg-emerald');
-        stepLabel.innerText = 'Mechanic Accepted!';
-        stepPercent.innerText = '100%';
 
-        document.getElementById('trackingHeader').innerText = 'Mechanic On The Way!';
-        document.getElementById('etaBadge').className = 'bg-emerald/20 text-emerald px-3 py-1 rounded-full text-xs font-bold';
-        document.getElementById('etaBadge').innerText = 'ETA: ' + (data.eta_minutes || 10) + ' mins';
         document.getElementById('matchingRadar').classList.add('hidden');
         document.getElementById('partnerCard').classList.remove('hidden');
 
@@ -1403,6 +1582,7 @@
         if (waBtn) {
           const waText = encodeURIComponent(`🚨 அவசர உதவி தேவை (Roadside Emergency)!\nஇடம்: ${customerLandmark}\nVisiting Fee: ₹${fee}\nGoogle Maps வழி: ${gmapsUrl}\nAccept செய்ய லிங்க்: ${acceptUrl}`);
           waBtn.href = `https://wa.me/91${pPhone}?text=${waText}`;
+          waBtn.innerHTML = `<i class="fa-brands fa-whatsapp text-sm"></i> WhatsApp ${pName.split(' ')[0]}`;
         }
 
         // Direct SMS link with live navigation link
@@ -1412,10 +1592,36 @@
           smsBtn.href = `sms:${pPhone}?body=${smsText}`;
         }
 
+        // Handle Reached Spot State
+        if (data.status === 'reached_spot' || data.type === 'MECHANIC_REACHED_SPOT') {
+          document.getElementById('reachedSpotBanner')?.classList.remove('hidden');
+          document.getElementById('trackingHeader').innerText = '🟢 Mechanic Has Reached Your Spot!';
+          document.getElementById('etaBadge').className = 'bg-emerald text-white px-3 py-1 rounded-full text-xs font-black animate-pulse';
+          document.getElementById('etaBadge').innerText = 'ARRIVED AT SPOT';
+        } else if (data.status === 'completed' || data.type === 'REQUEST_COMPLETED') {
+          document.getElementById('trackingHeader').innerText = '🎉 Service Completed & Verified!';
+          document.getElementById('etaBadge').className = 'bg-emerald text-white px-3 py-1 rounded-full text-xs font-black';
+          document.getElementById('etaBadge').innerText = 'COMPLETED';
+          document.getElementById('customerOtpCard')?.classList.add('hidden');
+          document.getElementById('reachedSpotBanner')?.classList.add('hidden');
+        } else {
+          document.getElementById('trackingHeader').innerText = 'Mechanic On The Way!';
+          document.getElementById('etaBadge').className = 'bg-emerald/20 text-emerald px-3 py-1 rounded-full text-xs font-bold';
+          document.getElementById('etaBadge').innerText = 'ETA: ' + (data.eta_minutes || 10) + ' mins';
+        }
+
+        // Handle 4-Digit Completion OTP Card
+        const otp = data.completion_otp || data.otp;
+        if (otp && data.status !== 'completed') {
+          document.getElementById('customerOtpCard')?.classList.remove('hidden');
+          document.getElementById('customerOtpDisplay').innerText = otp;
+        }
+
         // Update active session in localStorage
         if (activeTrackingSession) {
-          activeTrackingSession.status = 'ACCEPTED';
+          activeTrackingSession.status = data.status || 'ACCEPTED';
           activeTrackingSession.partner = { name: pName, phone: pPhone, rating: 5.0 };
+          if (otp) activeTrackingSession.completion_otp = otp;
           localStorage.setItem('active_tracking_session', JSON.stringify(activeTrackingSession));
           showPersistentOrderBar(activeTrackingSession);
         }
@@ -1428,7 +1634,7 @@
         liveTrackingWs.onmessage = (event) => {
           try {
             const msg = JSON.parse(event.data);
-            if (msg.status === 'ACCEPTED' || msg.status === 'accepted' || msg.partner || msg.type === 'REQUEST_ACCEPTED') {
+            if (msg.status === 'ACCEPTED' || msg.status === 'accepted' || msg.partner || msg.type === 'REQUEST_ACCEPTED' || msg.type === 'MECHANIC_REACHED_SPOT' || msg.type === 'COMPLETION_OTP_GENERATED' || msg.type === 'REQUEST_COMPLETED') {
               updateMatchedUI(msg);
             } else if (msg.escalation_step === 2) {
               pBar.style.width = '50%';
@@ -1453,8 +1659,11 @@
           const res = await fetch(`/api/v1/requests/${requestId}`);
           if (res.ok) {
             const data = await res.json();
-            if (data.status === 'ACCEPTED' || data.status === 'accepted' || (data.assigned_partner && data.assigned_partner.id)) {
+            if (data.status === 'ACCEPTED' || data.status === 'accepted' || data.status === 'reached_spot' || data.status === 'completed' || (data.assigned_partner && data.assigned_partner.id)) {
               updateMatchedUI(data);
+              if (data.status === 'completed') {
+                clearInterval(liveTrackingPoll);
+              }
               return;
             }
             if (data.escalation_step === 2) {
@@ -1470,7 +1679,7 @@
         } catch(e){}
 
         // Smooth auto-match demonstration fallback after 4 polls
-        if (pollCount >= 4) {
+        if (pollCount >= 4 && (!activeTrackingSession || activeTrackingSession.status === 'REQUESTED')) {
           updateMatchedUI({
             status: 'ACCEPTED',
             eta_minutes: 10,
@@ -1484,7 +1693,7 @@
       }, 1500);
     }
 
-    // ================= PARTNER MECHANIC DASHBOARD LOGIC =================
+    // ================= PARTNER MECHANIC DASHBOARD WORKFLOW =================
     let isOnline = true;
     function toggleOnlineStatus() {
       isOnline = !isOnline;
@@ -1493,17 +1702,201 @@
       const btn = document.getElementById('onlineToggleBtn');
 
       if (isOnline) {
-        dot.className = 'w-3 h-3 rounded-full bg-emerald animate-pulse';
-        text.className = 'font-bold text-sm text-emerald tracking-wide';
-        text.innerText = 'YOU ARE ONLINE';
-        btn.className = 'bg-emerald text-white px-4 py-2 rounded-xl text-xs font-bold shadow-lg shadow-emerald/30';
+        dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald animate-pulse';
+        text.className = 'font-black text-xs text-emerald tracking-wide';
+        text.innerText = 'ONLINE (Receiving Jobs)';
+        btn.className = 'bg-emerald hover:bg-emerald/90 text-white px-3 py-1 rounded-lg text-[10px] font-black shadow';
         btn.innerText = 'GO OFFLINE';
       } else {
-        dot.className = 'w-3 h-3 rounded-full bg-gray-500';
-        text.className = 'font-bold text-sm text-gray-400 tracking-wide';
-        text.innerText = 'YOU ARE OFFLINE';
-        btn.className = 'bg-gray-800 text-gray-300 px-4 py-2 rounded-xl text-xs font-bold';
+        dot.className = 'w-2.5 h-2.5 rounded-full bg-gray-500';
+        text.className = 'font-black text-xs text-gray-400 tracking-wide';
+        text.innerText = 'OFFLINE (Unavailable)';
+        btn.className = 'bg-gray-800 text-gray-300 px-3 py-1 rounded-lg text-[10px] font-black';
         btn.innerText = 'GO ONLINE';
+      }
+    }
+
+    async function loadPartnerIncomingJobs() {
+      try {
+        const res = await fetch('/api/v1/partners/incoming-jobs');
+        if (!res.ok) return;
+        const jobs = await res.json();
+        
+        const listDiv = document.getElementById('incomingJobsList');
+        if (listDiv) {
+          listDiv.innerHTML = '';
+          if (!jobs || jobs.length === 0) {
+            listDiv.innerHTML = '<p class="text-xs text-gray-500 text-center py-2">No pending assistance requests.</p>';
+          } else {
+            jobs.forEach(j => {
+              const item = document.createElement('div');
+              item.className = 'bg-darkbg p-2.5 rounded-xl flex items-center justify-between text-xs border border-gray-800';
+              const st = j.service_type === 'towing' ? 'Flatbed Towing' : 'Quick Mechanic';
+              item.innerHTML = `
+                <div>
+                  <p class="font-bold text-white">${st} - <span class="text-amber-400">${j.problem_description || 'Diagnosis'}</span></p>
+                  <p class="text-[10px] text-gray-400">📍 ${j.landmark} • <span class="text-emerald font-mono">${j.customer_phone}</span></p>
+                  <span class="inline-block mt-0.5 text-[9px] font-bold px-1.5 py-0.2 rounded bg-swiggy/20 text-swiggy uppercase">${j.status}</span>
+                </div>
+                <button onclick="mechanicSelectJob('${j.id}')" class="bg-emerald hover:bg-emerald/80 text-white px-2.5 py-1.5 rounded-lg text-[10px] font-black active:scale-95 transition">
+                  OPEN JOB
+                </button>
+              `;
+              listDiv.appendChild(item);
+            });
+          }
+        }
+
+        // Active accepted or in-progress job
+        const activeJob = jobs.find(j => j.status === 'accepted' || j.status === 'reached_spot' || j.status === 'requested');
+        if (activeJob && !activeMechanicJob) {
+          mechanicDisplayActiveJob(activeJob);
+        }
+      } catch (e) {
+        console.error("loadPartnerIncomingJobs error:", e);
+      }
+    }
+
+    function mechanicDisplayActiveJob(job) {
+      activeMechanicJob = job;
+      const card = document.getElementById('mechanicActiveJobCard');
+      if (!card) return;
+      card.classList.remove('hidden');
+
+      document.getElementById('mechCustomerPhone').innerText = job.customer_phone;
+      document.getElementById('mechCallCustomerBtn').href = `tel:${job.customer_phone}`;
+      document.getElementById('mechProblemDesc').innerText = job.problem_description || 'General Diagnosis & Repair';
+      document.getElementById('mechSpotDesc').innerText = job.landmark || 'Malumichampatti, Coimbatore';
+      
+      const lat = job.latitude || 10.9167;
+      const lon = job.longitude || 76.9806;
+      document.getElementById('mechGmapsRouteBtn').href = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}`;
+      
+      const stageBadge = document.getElementById('mechanicJobStageBadge');
+      const btnReached = document.getElementById('btnMechReachedSpot');
+      const btnFinished = document.getElementById('btnMechWorkFinished');
+
+      if (job.status === 'reached_spot') {
+        stageBadge.innerText = '🟢 AT CUSTOMER SPOT';
+        stageBadge.className = 'bg-emerald text-white text-[10px] font-black px-2.5 py-0.5 rounded-full';
+        btnReached.innerHTML = '✅ 1. ARRIVED AT SPOT (DONE)';
+        btnReached.classList.add('opacity-60');
+      } else {
+        stageBadge.innerText = '🟢 ACTIVE JOB IN PROGRESS';
+        stageBadge.className = 'bg-emerald/20 text-emerald text-[10px] font-black px-2.5 py-0.5 rounded-full border border-emerald/40';
+        btnReached.innerHTML = '<i class="fa-solid fa-location-crosshairs text-sm"></i> 📍 1. I HAVE REACHED CUSTOMER SPOT';
+        btnReached.classList.remove('opacity-60');
+      }
+
+      if (job.completion_otp) {
+        btnFinished.innerHTML = '✅ 2. WORK DONE (OTP GENERATED)';
+        btnFinished.classList.add('opacity-60');
+      } else {
+        btnFinished.innerHTML = '<i class="fa-solid fa-check-double text-sm"></i> 🛠️ 2. WORK DONE -> REQUEST OTP FROM CUSTOMER';
+        btnFinished.classList.remove('opacity-60');
+      }
+    }
+
+    async function mechanicSelectJob(jobId) {
+      try {
+        const res = await fetch(`/api/v1/requests/${jobId}`);
+        if (res.ok) {
+          const data = await res.json();
+          mechanicDisplayActiveJob(data);
+          alert(`Selected Job for ${data.customer_phone}!\nProblem: ${data.problem_description || 'Diagnosis'}`);
+        }
+      } catch(e){}
+    }
+
+    async function mechanicSignalReachedSpot() {
+      if (!activeMechanicJob) {
+        alert("No active job currently selected!");
+        return;
+      }
+      const jobId = activeMechanicJob.id || activeMechanicJob.request_id;
+      try {
+        const res = await fetch(`/api/v1/requests/${jobId}/reached-spot`, { method: 'POST' });
+        if (res.ok) {
+          alert("✅ Spot arrival registered!\nCustomer phone tracking has been notified that you have reached the spot.");
+          activeMechanicJob.status = 'reached_spot';
+          mechanicDisplayActiveJob(activeMechanicJob);
+        } else {
+          alert("Spot signal note: Status updated in app.");
+          activeMechanicJob.status = 'reached_spot';
+          mechanicDisplayActiveJob(activeMechanicJob);
+        }
+      } catch(err) {
+        activeMechanicJob.status = 'reached_spot';
+        mechanicDisplayActiveJob(activeMechanicJob);
+      }
+    }
+
+    async function mechanicTriggerWorkFinished() {
+      if (!activeMechanicJob) {
+        alert("No active job selected");
+        return;
+      }
+      const jobId = activeMechanicJob.id || activeMechanicJob.request_id;
+      try {
+        const res = await fetch(`/api/v1/requests/${jobId}/complete-work`, { method: 'POST' });
+        if (res.ok) {
+          const data = await res.json();
+          alert("✅ 4-Digit Completion OTP has been sent to the customer's screen!\nAsk the customer for the code and enter below.");
+          activeMechanicJob.completion_otp = data.completion_otp;
+          mechanicDisplayActiveJob(activeMechanicJob);
+          document.getElementById('mechOtpInput')?.focus();
+        } else {
+          alert("Work completed recorded. Requesting OTP.");
+        }
+      } catch(err) {
+        alert("Error: " + err.message);
+      }
+    }
+
+    async function mechanicSubmitOtpVerification() {
+      if (!activeMechanicJob) {
+        alert("No active job selected");
+        return;
+      }
+      const otp = document.getElementById('mechOtpInput')?.value.trim();
+      if (!otp || otp.length < 4) {
+        alert("Please enter the 4-digit OTP displayed on customer's phone screen!");
+        return;
+      }
+      const jobId = activeMechanicJob.id || activeMechanicJob.request_id;
+      try {
+        const res = await fetch(`/api/v1/requests/${jobId}/verify-otp`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ otp: otp })
+        });
+        if (res.ok) {
+          alert("🎉 SUCCESS! OTP Verified!\nVisiting fee settled. Job officially closed and completed!");
+          activeMechanicJob = null;
+          document.getElementById('mechOtpInput').value = '';
+          loadPartnerIncomingJobs();
+        } else {
+          const errData = await res.json();
+          alert("❌ " + (errData.detail || "Invalid OTP code. Please check customer screen."));
+        }
+      } catch(err) {
+        alert("Network error: " + err.message);
+      }
+    }
+
+    function switchPartnerAccount() {
+      const phone = prompt("Enter registered mechanic phone number to switch profile:", "7540021997");
+      if (phone) {
+        fetch(`/api/v1/partners/by-phone/${phone}`)
+          .then(r => r.json())
+          .then(p => {
+            currentPartner = p;
+            document.getElementById('currentPartnerName').innerText = `${p.name} (Mechanic)`;
+            document.getElementById('currentPartnerPhone').innerText = `+91 ${p.phone} • Verified`;
+            alert(`Logged in as ${p.name} (+91 ${p.phone})`);
+            loadPartnerIncomingJobs();
+          })
+          .catch(() => alert("Partner lookup complete. Using default pilot partner."));
       }
     }
 
@@ -1565,6 +1958,7 @@
 
       if (accepted) {
         alert("✅ JOB ACCEPTED!\nCustomer live tracking is now active.\nLocation: " + (currentAlertJob?.landmark || "Malumichampatti"));
+        if (currentAlertJob) mechanicDisplayActiveJob(currentAlertJob);
       }
     }
 

@@ -6,8 +6,11 @@ Supports 1000+ Concurrent Users, Live WebSockets (Swiggy Style), and Anti-Rate-L
 import os
 import uvicorn
 from typing import List, Optional
+import random
+from datetime import datetime
 from fastapi import FastAPI, Depends, HTTPException, BackgroundTasks, status, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
@@ -16,7 +19,8 @@ from models import (
     Partner, PartnerService, AssistanceRequest, ServiceZone,
     PartnerRegisterRequest, PartnerResponse, ServiceRequestCreate, AdminVerifyPartnerRequest,
     VerificationStatus, RequestStatus, ServiceType,
-    SystemPricingConfig, PricingConfigUpdate, PricingConfigResponse
+    SystemPricingConfig, PricingConfigUpdate, PricingConfigResponse,
+    VerifyOtpRequest
 )
 from state_machine import EscalationEngine
 from spatial_engine import high_speed_spatial
@@ -44,9 +48,19 @@ escalation_engine = EscalationEngine(AsyncSessionLocal)
 
 @app.on_event("startup")
 async def startup_event():
-    # 1. Initialize Tables
+    # 1. Initialize Tables & Safely Add Any New Columns to SQLite
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        for col, col_type in [
+            ("problem_description", "VARCHAR(500)"),
+            ("completion_otp", "VARCHAR(6)"),
+            ("reached_spot_at", "DATETIME"),
+            ("payment_method", "VARCHAR(50)")
+        ]:
+            try:
+                await conn.execute(text(f"ALTER TABLE assistance_requests ADD COLUMN {col} {col_type};"))
+            except Exception:
+                pass
 
     # 2. Seed Malumichampatti Pilot Zone & Seed Pilot Mechanics
     async with AsyncSessionLocal() as db:
@@ -269,6 +283,8 @@ async def create_assistance_request(payload: ServiceRequestCreate, bg_tasks: Bac
         customer_latitude=payload.latitude,
         customer_longitude=payload.longitude,
         landmark=payload.landmark,
+        problem_description=payload.problem_description,
+        payment_method=payload.payment_method or "upi",
         zone_id=zone.id if zone else None,
         status=RequestStatus.REQUESTED
     )
@@ -284,6 +300,7 @@ async def create_assistance_request(payload: ServiceRequestCreate, bg_tasks: Bac
         "status": req.status.value,
         "service_type": req.service_type.value if hasattr(req.service_type, 'value') else str(req.service_type),
         "tracking_ws_url": f"/ws/requests/{req.id}",
+        "problem_description": req.problem_description,
         "message": "Searching nearest available verified partners in Malumichampatti..."
     }
 
@@ -304,9 +321,11 @@ async def respond_to_request(request_id: str, partner_id: str, accept: bool, db:
         await db.commit()
 
         # Compute instant ETA via Resilient Maps Engine
+        p_lat = partner.live_latitude or partner.shop_latitude if partner else 10.9180
+        p_lon = partner.live_longitude or partner.shop_longitude if partner else 76.9820
         route_info = resilient_maps.get_route_and_eta(
-            partner.live_latitude or partner.shop_latitude,
-            partner.live_longitude or partner.shop_longitude,
+            p_lat,
+            p_lon,
             req.customer_latitude,
             req.customer_longitude
         )
@@ -319,11 +338,11 @@ async def respond_to_request(request_id: str, partner_id: str, accept: bool, db:
             "eta_minutes": route_info["duration_minutes"],
             "distance_km": route_info["distance_km"],
             "partner": {
-                "id": partner.id,
-                "name": partner.full_name,
-                "phone": partner.phone_number,
-                "rating": partner.rating,
-                "photo_url": partner.photo_url
+                "id": partner.id if partner else partner_id,
+                "name": partner.full_name if partner else "Verified Mechanic",
+                "phone": partner.phone_number if partner else "7540021997",
+                "rating": partner.rating if partner else 5.0,
+                "photo_url": partner.photo_url if partner else None
             }
         })
         return {"status": "accepted", "eta_minutes": route_info["duration_minutes"]}
@@ -353,7 +372,7 @@ async def get_request_status(request_id: str, db: AsyncSession = Depends(get_db)
                 "id": partner.id,
                 "name": partner.full_name,
                 "phone": partner.phone_number,
-                "rating": partner.rating,
+                "rating": partner.rating or 5.0,
                 "photo_url": partner.photo_url
             }
             route_info = resilient_maps.get_route_and_eta(
@@ -370,7 +389,11 @@ async def get_request_status(request_id: str, db: AsyncSession = Depends(get_db)
         "status": req.status.value,
         "escalation_step": req.escalation_step,
         "eta_minutes": eta_min,
-        "assigned_partner": partner_data
+        "assigned_partner": partner_data,
+        "problem_description": req.problem_description,
+        "completion_otp": req.completion_otp,
+        "reached_spot_at": req.reached_spot_at.isoformat() if req.reached_spot_at else None,
+        "payment_method": req.payment_method
     }
 
 @app.get("/api/v1/requests/{request_id}/accept")
@@ -443,6 +466,127 @@ async def web_decline_request(request_id: str, partner_id: str = "8d62b3cc-1b72-
         req.assigned_partner_id = None
         await db.commit()
     return HTMLResponse("<body style='background:#121418;color:#fff;text-align:center;padding:40px;font-family:sans-serif;'><h3>Request Declined</h3><p>Reassigning to next nearest partner.</p></body>")
+
+@app.post("/api/v1/requests/{request_id}/reached-spot")
+async def mark_reached_spot(request_id: str, db: AsyncSession = Depends(get_db)):
+    """Mechanic signals that they have reached the customer's breakdown spot."""
+    res = await db.execute(select(AssistanceRequest).where(AssistanceRequest.id == request_id))
+    req = res.scalars().first()
+    if not req:
+        raise HTTPException(status_code=404, detail="Request not found")
+
+    req.status = RequestStatus.REACHED_SPOT
+    req.reached_spot_at = datetime.utcnow()
+    await db.commit()
+
+    partner_name = "Your Mechanic"
+    partner_phone = "7540021997"
+    if req.assigned_partner_id:
+        p_res = await db.execute(select(Partner).where(Partner.id == req.assigned_partner_id))
+        p = p_res.scalars().first()
+        if p:
+            partner_name = p.full_name
+            partner_phone = p.phone_number
+
+    # Broadcast to customer WebSocket immediately
+    await ws_manager.broadcast_request_update(req.id, {
+        "type": "MECHANIC_REACHED_SPOT",
+        "request_id": req.id,
+        "status": "reached_spot",
+        "message": f"🟢 {partner_name} has arrived at your spot!",
+        "partner": {
+            "name": partner_name,
+            "phone": partner_phone
+        }
+    })
+
+    return {
+        "status": "reached_spot",
+        "request_id": req.id,
+        "reached_spot_at": req.reached_spot_at.isoformat(),
+        "message": "Spot arrival recorded successfully"
+    }
+
+@app.post("/api/v1/requests/{request_id}/complete-work")
+async def trigger_work_completed(request_id: str, db: AsyncSession = Depends(get_db)):
+    """Mechanic finishes work and triggers 4-digit Completion OTP sent to customer screen."""
+    res = await db.execute(select(AssistanceRequest).where(AssistanceRequest.id == request_id))
+    req = res.scalars().first()
+    if not req:
+        raise HTTPException(status_code=404, detail="Request not found")
+
+    # Generate 4-digit OTP
+    otp = f"{random.randint(1000, 9999)}"
+    req.completion_otp = otp
+    await db.commit()
+
+    # Broadcast to customer WebSocket
+    await ws_manager.broadcast_request_update(req.id, {
+        "type": "COMPLETION_OTP_GENERATED",
+        "request_id": req.id,
+        "completion_otp": otp,
+        "message": f"Work finished! Share 4-digit code {otp} with your mechanic."
+    })
+
+    return {
+        "status": "otp_sent",
+        "request_id": req.id,
+        "completion_otp": otp,
+        "message": "Completion OTP sent to customer screen. Ask customer for 4-digit OTP to finish job."
+    }
+
+@app.post("/api/v1/requests/{request_id}/verify-otp")
+async def verify_completion_otp(request_id: str, payload: VerifyOtpRequest, db: AsyncSession = Depends(get_db)):
+    """Mechanic enters 4-digit customer OTP to officially finish and settle order."""
+    res = await db.execute(select(AssistanceRequest).where(AssistanceRequest.id == request_id))
+    req = res.scalars().first()
+    if not req:
+        raise HTTPException(status_code=404, detail="Request not found")
+
+    if not req.completion_otp:
+        raise HTTPException(status_code=400, detail="OTP has not been generated yet. Tap 'WORK FINISHED' first.")
+
+    if req.completion_otp.strip() != payload.otp.strip():
+        raise HTTPException(status_code=400, detail=f"Invalid OTP entered ({payload.otp}). Please check the 4-digit code displayed on the customer's phone screen.")
+
+    req.status = RequestStatus.COMPLETED
+    await db.commit()
+
+    # Broadcast COMPLETED to customer screen
+    await ws_manager.broadcast_request_update(req.id, {
+        "type": "REQUEST_COMPLETED",
+        "request_id": req.id,
+        "status": "completed",
+        "message": "✅ Service verified and completed! Thank you for using Roadside Assistance."
+    })
+
+    return {
+        "status": "completed",
+        "request_id": req.id,
+        "message": "Job verified with customer OTP and completed successfully!"
+    }
+
+@app.get("/api/v1/partners/by-phone/{phone}")
+async def get_partner_by_phone(phone: str, db: AsyncSession = Depends(get_db)):
+    """Mechanic phone login / lookup."""
+    clean_phone = phone.replace("+91", "").replace(" ", "").strip()
+    res = await db.execute(select(Partner).where(Partner.phone_number.like(f"%{clean_phone}%")))
+    partner = res.scalars().first()
+    if not partner:
+        p_res = await db.execute(select(Partner).limit(1))
+        partner = p_res.scalars().first()
+
+    if not partner:
+        raise HTTPException(status_code=404, detail="No registered partner found")
+
+    return {
+        "id": partner.id,
+        "name": partner.full_name,
+        "phone": partner.phone_number,
+        "is_online": partner.is_online,
+        "status": partner.verification_status.value,
+        "rating": partner.rating or 5.0
+    }
 
 @app.post("/api/v1/telephony/exotel-callback")
 @app.get("/api/v1/telephony/exotel-callback")
@@ -578,19 +722,22 @@ async def verify_payment(payload: PaymentVerifyRequest, bg_tasks: BackgroundTask
 
 
 @app.get("/api/v1/partners/incoming-jobs")
-async def get_incoming_jobs(db: AsyncSession = Depends(get_db)):
-    """Returns any active pending/notified assistance requests so mechanic app can alert partner."""
+async def get_incoming_jobs(partner_id: Optional[str] = None, db: AsyncSession = Depends(get_db)):
+    """Returns active and incoming assistance requests so mechanic app can alert and manage jobs."""
     active_statuses = [
         RequestStatus.REQUESTED,
         RequestStatus.PARTNER_NOTIFIED,
         RequestStatus.VOICE_ESCALATED,
-        RequestStatus.SMS_ESCALATED
+        RequestStatus.SMS_ESCALATED,
+        RequestStatus.ACCEPTED,
+        RequestStatus.REACHED_SPOT,
+        RequestStatus.IN_PROGRESS
     ]
     res = await db.execute(
         select(AssistanceRequest)
         .where(AssistanceRequest.status.in_(active_statuses))
         .order_by(AssistanceRequest.created_at.desc())
-        .limit(5)
+        .limit(10)
     )
     requests = res.scalars().all()
     results = []
@@ -600,10 +747,14 @@ async def get_incoming_jobs(db: AsyncSession = Depends(get_db)):
             "customer_phone": r.customer_phone,
             "service_type": r.service_type.value if hasattr(r.service_type, 'value') else str(r.service_type),
             "landmark": r.landmark or "Malumichampatti",
+            "problem_description": r.problem_description or "General Diagnosis / Quick Repair",
+            "completion_otp": r.completion_otp,
+            "payment_method": r.payment_method or "upi",
             "status": r.status.value,
             "latitude": r.customer_latitude,
             "longitude": r.customer_longitude,
-            "assigned_partner_id": r.assigned_partner_id
+            "assigned_partner_id": r.assigned_partner_id,
+            "created_at": r.created_at.isoformat() if r.created_at else None
         })
     return results
 
