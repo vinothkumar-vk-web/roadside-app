@@ -19,7 +19,7 @@
   <!-- Instant Cache-Buster & PWA Purge on Version Update -->
   <script>
     (function() {
-      const APP_VERSION = 'v5.3-nocache-pin';
+      const APP_VERSION = 'v5.4-clean-portal';
       if (localStorage.getItem('installed_app_ver') !== APP_VERSION) {
         localStorage.setItem('installed_app_ver', APP_VERSION);
         if ('caches' in window) {
@@ -31,8 +31,8 @@
           });
         }
         // Force refresh to reload newest HTML from server
-        if (location.search.indexOf('v=5.3') === -1) {
-          location.replace(location.pathname + '?v=5.3');
+        if (location.search.indexOf('v=5.4') === -1) {
+          location.replace(location.pathname + '?v=5.4');
         }
       }
     })();
@@ -117,9 +117,12 @@
         </p>
       </div>
     </div>
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-1.5">
       <button onclick="forceHardSync()" title="Force Cache Purge & Refresh" class="bg-cardbg border border-gray-700 hover:border-swiggy text-gray-300 w-8 h-8 rounded-full flex items-center justify-center text-xs active:rotate-180 transition-transform">
         <i class="fa-solid fa-rotate text-swiggy"></i>
+      </button>
+      <button onclick="promptMechanicLogin()" title="Mechanic Console" class="bg-cardbg border border-gray-700 hover:border-swiggy text-gray-300 hover:text-swiggy px-2.5 py-1 rounded-full flex items-center gap-1 text-[11px] font-bold active:scale-95 transition">
+        <i class="fa-solid fa-wrench text-swiggy text-[10px]"></i> Mechanic
       </button>
       <button onclick="promptAdminLogin()" title="Owner Admin Access (PIN Required)" class="bg-cardbg border border-gray-700 hover:border-amber-400 text-gray-400 hover:text-amber-400 w-8 h-8 rounded-full flex items-center justify-center text-xs active:scale-95 transition">
         <i class="fa-solid fa-lock text-[10px]"></i>
@@ -440,6 +443,16 @@
     <!-- ================= SCREEN 3: PARTNER DASHBOARD (MECHANIC VIEW) ================= -->
     <div id="partnerScreen" class="hidden space-y-4">
       
+      <!-- Partner Screen Header -->
+      <div class="flex items-center justify-between pb-2 border-b border-gray-800">
+        <button onclick="switchTab('customer')" class="bg-gray-800 hover:bg-gray-700 text-white font-black px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 shadow active:scale-95 transition">
+          <i class="fa-solid fa-arrow-left text-swiggy"></i> Back to Customer App
+        </button>
+        <span class="bg-emerald/20 text-emerald text-[10px] font-black px-2.5 py-1 rounded-full border border-emerald/40 flex items-center gap-1">
+          <i class="fa-solid fa-wrench"></i> MECHANIC CONSOLE
+        </span>
+      </div>
+
       <!-- Partner Login & Profile Selector -->
       <div class="bg-cardbg border border-gray-800 rounded-2xl p-3.5 space-y-2.5 shadow-lg">
         <div class="flex items-center justify-between">
@@ -576,15 +589,13 @@
 
     <!-- ================= SCREEN 4: ADMIN CONTROL PANEL ================= -->
     <div id="adminScreen" class="hidden space-y-4">
+      <!-- Admin Top Navigation Bar -->
       <div class="flex items-center justify-between pb-2 border-b border-gray-800">
-        <div>
-          <h2 class="text-base font-black text-white flex items-center gap-2">
-            <i class="fa-solid fa-crown text-amber-400"></i> Admin Control Panel
-          </h2>
-          <p class="text-xs text-gray-400">Set prices, commissions & manage partners</p>
-        </div>
-        <span class="bg-amber-400/20 text-amber-400 text-[10px] font-black px-2.5 py-1 rounded-full border border-amber-400/40">
-          MASTER ADMIN
+        <button onclick="switchTab('customer')" class="bg-gray-800 hover:bg-gray-700 text-white font-black px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 shadow active:scale-95 transition">
+          <i class="fa-solid fa-arrow-left text-swiggy"></i> Back to Customer App
+        </button>
+        <span class="bg-amber-400/20 text-amber-400 text-[10px] font-black px-2.5 py-1 rounded-full border border-amber-400/40 flex items-center gap-1">
+          <i class="fa-solid fa-crown text-amber-400"></i> MASTER ADMIN
         </span>
       </div>
 
@@ -668,10 +679,47 @@
         </button>
       </div>
 
+      <!-- Register & Add New Mechanic directly by Admin -->
+      <div class="bg-cardbg border border-gray-800 rounded-2xl p-4 space-y-3">
+        <h3 class="text-xs font-black text-white uppercase tracking-wider flex items-center gap-1.5">
+          <i class="fa-solid fa-user-plus text-swiggy"></i> Register New Mechanic / Partner
+        </h3>
+        <p class="text-[11px] text-gray-400">Add a mechanic with their name and phone number. They will be auto-approved to receive jobs.</p>
+
+        <div class="space-y-2 text-xs">
+          <div>
+            <label class="text-[11px] font-bold text-gray-300 block mb-1">Mechanic Full Name</label>
+            <input id="adminRegName" type="text" placeholder="e.g. Senthil / Ramesh" class="w-full bg-darkbg border border-gray-700 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-swiggy">
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="text-[11px] font-bold text-gray-300 block mb-1">Phone Number</label>
+              <input id="adminRegPhone" type="tel" placeholder="e.g. 9842198765" class="w-full bg-darkbg border border-gray-700 rounded-xl px-3 py-2 text-xs text-white font-mono outline-none focus:border-swiggy">
+            </div>
+            <div>
+              <label class="text-[11px] font-bold text-gray-300 block mb-1">Service Type</label>
+              <select id="adminRegService" class="w-full bg-darkbg border border-gray-700 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-swiggy">
+                <option value="mechanic">Bike & Car Mechanic</option>
+                <option value="towing">Flatbed Towing</option>
+                <option value="fuel_delivery">Fuel Delivery</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label class="text-[11px] font-bold text-gray-300 block mb-1">Mechanic Passcode (for console login)</label>
+            <input id="adminRegPasscode" type="text" value="1234" class="w-full bg-darkbg border border-gray-700 rounded-xl px-3 py-2 text-xs text-amber-400 font-mono font-bold outline-none focus:border-amber-400">
+          </div>
+        </div>
+
+        <button onclick="adminRegisterMechanic()" class="w-full bg-swiggy hover:bg-orange-600 text-white font-black py-2.5 rounded-xl text-xs tracking-wide shadow-lg shadow-swiggy/30 active:scale-[0.98] transition flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-check"></i> ADD & ACTIVATE MECHANIC
+        </button>
+      </div>
+
       <!-- Partner Approval Queue -->
       <div class="bg-cardbg border border-gray-800 rounded-2xl p-3.5 space-y-2.5">
         <div class="flex justify-between items-center">
-          <h4 class="text-xs font-bold text-white uppercase">Partner Verification Queue</h4>
+          <h4 class="text-xs font-bold text-white uppercase">Verified Mechanics & Partners Queue</h4>
           <button onclick="loadAdminPartners()" class="text-[11px] text-swiggy hover:underline"><i class="fa-solid fa-rotate-right"></i> Refresh</button>
         </div>
         <div id="adminPartnerList" class="space-y-2">
@@ -680,47 +728,10 @@
       </div>
     </div>
 
-    <!-- ================= SCREEN 5: PARTNER ONBOARDING ================= -->
-    <div id="registerScreen" class="hidden space-y-3.5">
-      <div>
-        <h2 class="text-base font-black text-white">Partner Onboarding</h2>
-        <p class="text-xs text-gray-400">Join roadside assistance network in Malumichampatti</p>
-      </div>
-
-      <div class="space-y-3">
-        <div>
-          <label class="text-xs font-bold text-gray-400">Full Name</label>
-          <input id="regName" type="text" placeholder="e.g. Senthil Kumar" class="w-full bg-cardbg border border-gray-800 rounded-xl px-3 py-2.5 text-xs text-white outline-none focus:border-swiggy mt-1">
-        </div>
-        <div>
-          <label class="text-xs font-bold text-gray-400">Phone Number (OTP Verified)</label>
-          <div class="flex items-center gap-2 mt-1">
-            <input id="regPhone" type="tel" value="+91 98421 11223" class="w-full bg-cardbg border border-gray-800 rounded-xl px-3 py-2.5 text-xs text-white outline-none focus:border-swiggy">
-            <span class="bg-emerald/20 text-emerald text-[11px] font-bold px-2.5 py-2.5 rounded-xl shrink-0"><i class="fa-solid fa-check"></i> OTP OK</span>
-          </div>
-        </div>
-        <div>
-          <label class="text-xs font-bold text-gray-400">Experience (Years)</label>
-          <input id="regExp" type="number" value="6" class="w-full bg-cardbg border border-gray-800 rounded-xl px-3 py-2.5 text-xs text-white outline-none focus:border-swiggy mt-1">
-        </div>
-        <div>
-          <label class="text-xs font-bold text-gray-400">ID Proof (Aadhaar / Driving License)</label>
-          <div class="border border-dashed border-gray-700 bg-cardbg p-3 rounded-xl text-center text-xs text-gray-400 mt-1 cursor-pointer">
-            <i class="fa-solid fa-cloud-arrow-up text-swiggy text-lg mb-1"></i>
-            <p>Uploaded: <span class="text-white font-bold">aadhaar_verified.pdf</span></p>
-          </div>
-        </div>
-      </div>
-
-      <button onclick="submitPartnerRegistration()" class="w-full bg-swiggy hover:bg-orange-600 text-white font-black py-3.5 rounded-xl text-xs tracking-wide shadow-lg shadow-swiggy/30 active:scale-[0.98] transition">
-        SUBMIT FOR ADMIN APPROVAL
-      </button>
-    </div>
-
   </main>
 
-  <!-- SWIGGY-STYLE PERSISTENT ACTIVE ORDER BAR (Floats above bottom nav when order is active) -->
-  <div id="persistentActiveOrderBar" class="hidden fixed bottom-[64px] left-0 right-0 max-w-lg mx-auto px-3 z-30 pointer-events-auto">
+  <!-- SWIGGY-STYLE PERSISTENT ACTIVE ORDER BAR (Floats at bottom when order is active) -->
+  <div id="persistentActiveOrderBar" class="hidden fixed bottom-3 left-0 right-0 max-w-lg mx-auto px-3 z-30 pointer-events-auto">
     <div class="bg-cardbg/95 border-2 border-emerald rounded-2xl p-3 shadow-2xl flex items-center justify-between backdrop-blur-md">
       <div class="flex items-center gap-2.5 cursor-pointer flex-1 mr-2" onclick="openActiveTracking()">
         <div class="relative w-10 h-10 rounded-full bg-emerald/20 flex items-center justify-center text-emerald text-base shrink-0">
@@ -732,11 +743,11 @@
             <span class="text-xs font-black text-white">Mechanic On The Way</span>
             <span id="miniEtaBadge" class="bg-emerald/20 text-emerald text-[9px] font-bold px-1.5 py-0.5 rounded shrink-0">ETA 10m</span>
           </div>
-          <p id="miniPartnerDesc" class="text-[10px] text-gray-400 truncate">Jegan (7540021997) • Tap to view tracking</p>
+          <p id="miniPartnerDesc" class="text-[10px] text-gray-400 truncate">Assigned Mechanic • Tap to view tracking</p>
         </div>
       </div>
       <div class="flex items-center gap-1.5 shrink-0">
-        <a id="miniCallBtn" href="tel:7540021997" class="w-8 h-8 rounded-lg bg-emerald/20 text-emerald flex items-center justify-center text-xs active:scale-95 transition" title="Call Jegan">
+        <a id="miniCallBtn" href="tel:7540021997" class="w-8 h-8 rounded-lg bg-emerald/20 text-emerald flex items-center justify-center text-xs active:scale-95 transition" title="Call Mechanic">
           <i class="fa-solid fa-phone"></i>
         </a>
         <button onclick="resolveCurrentJob()" title="Mark Resolved & Close" class="w-8 h-8 rounded-lg bg-gray-800 hover:bg-emerald/20 text-gray-400 hover:text-emerald flex items-center justify-center text-xs active:scale-95 transition">
@@ -745,24 +756,6 @@
       </div>
     </div>
   </div>
-
-  <!-- Native Bottom Navigation Bar (Docked at bottom like Swiggy) -->
-  <nav class="safe-bottom bg-cardbg/95 backdrop-blur border-t border-gray-800 px-2 py-2 flex justify-around items-center shrink-0 sticky bottom-0 z-40">
-    <button onclick="switchTab('customer')" class="tab-btn flex flex-col items-center gap-1 text-swiggy p-1" id="tab-customer">
-      <i class="fa-solid fa-user text-base"></i>
-      <span class="text-[10px] font-black">Customer</span>
-    </button>
-
-    <button onclick="switchTab('partner')" class="tab-btn flex flex-col items-center gap-1 text-gray-400 hover:text-gray-200 p-1" id="tab-partner">
-      <i class="fa-solid fa-screwdriver-wrench text-base"></i>
-      <span class="text-[10px] font-black">Mechanic</span>
-    </button>
-
-    <button onclick="switchTab('register')" class="tab-btn flex flex-col items-center gap-1 text-gray-400 hover:text-gray-200 p-1" id="tab-register">
-      <i class="fa-solid fa-id-card text-base"></i>
-      <span class="text-[10px] font-black">Register</span>
-    </button>
-  </nav>
 
   <!-- EMERGENCY DISPATCH MODAL -->
   <div id="emergencyModal" class="hidden fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -1146,26 +1139,37 @@
         if (res.ok) {
           const partners = await res.json();
           const listDiv = document.getElementById('adminPartnerList');
+          if (!listDiv) return;
           listDiv.innerHTML = '';
+          if (partners.length === 0) {
+            listDiv.innerHTML = '<p class="text-xs text-gray-500 text-center py-2">No partners registered yet.</p>';
+            return;
+          }
           partners.forEach(p => {
             const isApproved = p.status === 'approved';
+            const safeName = (p.name || 'Mechanic').replace(/'/g, "\\'");
+            const safePhone = (p.phone || '').replace(/'/g, "\\'");
             const row = document.createElement('div');
             row.className = 'bg-darkbg p-2.5 rounded-xl flex items-center justify-between text-xs border border-gray-800';
             row.innerHTML = `
               <div>
-                <p class="font-bold text-white">${p.name}</p>
-                <p class="text-[10px] text-gray-400">${p.phone} • Exp: ${p.experience} yrs</p>
-                <span class="inline-block mt-1 text-[9px] font-bold px-1.5 py-0.5 rounded ${isApproved ? 'bg-emerald/20 text-emerald' : 'bg-amber-500/20 text-amber-400'}">
-                  ${p.status.toUpperCase()}
-                </span>
+                <p class="font-bold text-white flex items-center gap-1.5">
+                  ${p.name}
+                  <span class="text-[9px] px-1.5 py-0.2 rounded font-mono ${isApproved ? 'bg-emerald/20 text-emerald' : 'bg-amber-500/20 text-amber-400'}">
+                    ${isApproved ? 'ACTIVE' : 'PENDING'}
+                  </span>
+                </p>
+                <p class="text-[10px] text-gray-400 font-mono">${p.phone} • Exp: ${p.experience || 5} yrs</p>
               </div>
-              <div>
+              <div class="flex items-center gap-1.5">
                 ${!isApproved ? `
                   <button onclick="approvePartner('${p.id}')" class="bg-emerald hover:bg-emerald/80 text-white px-2.5 py-1 rounded text-[10px] font-bold active:scale-95 transition">
                     APPROVE
                   </button>
                 ` : `
-                  <span class="text-emerald font-bold text-[10px]"><i class="fa-solid fa-check"></i> Active</span>
+                  <button onclick="loginAsThisPartner('${p.id}', '${safeName}', '${safePhone}')" class="bg-swiggy/20 text-swiggy hover:bg-swiggy/30 px-2.5 py-1 rounded text-[10px] font-bold active:scale-95 transition flex items-center gap-1">
+                    <i class="fa-solid fa-wrench text-[9px]"></i> CONSOLE
+                  </button>
                 `}
               </div>
             `;
@@ -1189,7 +1193,67 @@
       }
     }
 
-    // ================= OWNER PIN AUTH & CACHE PURGE =================
+    async function adminRegisterMechanic() {
+      const name = document.getElementById('adminRegName').value.trim();
+      const phone = document.getElementById('adminRegPhone').value.trim();
+      const service = document.getElementById('adminRegService').value;
+
+      if (!name) { alert("Please enter mechanic full name"); return; }
+      if (!phone || phone.length < 10) { alert("Please enter a valid 10-digit mobile number"); return; }
+
+      try {
+        const resp = await fetch('/api/v1/partners/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            full_name: name,
+            phone_number: phone,
+            photo_url: "https://example.com/photo.jpg",
+            id_proof_url: "https://example.com/id.jpg",
+            service_types: [service],
+            years_of_experience: 5,
+            shop_latitude: 10.9180,
+            shop_longitude: 76.9820,
+            is_live_location: true,
+            zone_name: "Malumichampatti"
+          })
+        });
+        if (resp.ok) {
+          const data = await resp.json();
+          // Auto approve immediately
+          await fetch('/api/v1/admin/partners/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ partner_id: data.id, status: 'approved' })
+          });
+          alert(`✅ Mechanic ${name} (+91 ${phone}) registered and approved successfully!\nLogin Passcode: 1234`);
+          document.getElementById('adminRegName').value = '';
+          document.getElementById('adminRegPhone').value = '';
+          loadAdminPartners();
+        } else {
+          alert("Registration response: " + resp.statusText);
+        }
+      } catch (e) {
+        alert("Error: " + e.message);
+      }
+    }
+
+    function loginAsThisPartner(id, name, phone) {
+      currentPartner = { id: id, name: name, phone: phone };
+      updatePartnerUI(currentPartner);
+      switchTab('partner');
+      alert(`✅ Logged into Mechanic Console as: ${name} (+91 ${phone})`);
+    }
+
+    function updatePartnerUI(partner) {
+      if (!partner) return;
+      const nameEl = document.getElementById('currentPartnerName');
+      const phoneEl = document.getElementById('currentPartnerPhone');
+      if (nameEl) nameEl.innerText = `${partner.name} (Mechanic)`;
+      if (phoneEl) phoneEl.innerText = `+91 ${partner.phone} • Verified`;
+    }
+
+    // ================= OWNER PIN AUTH & MECHANIC LOGIN =================
     function promptAdminLogin() {
       const pin = prompt("🔐 Enter Master Admin 4-Digit PIN to access Admin Control:");
       if (pin === "9962") {
@@ -1197,6 +1261,30 @@
         switchTab('admin');
       } else if (pin !== null) {
         alert("❌ Access Denied: Incorrect Master Admin PIN!");
+      }
+    }
+
+    function promptMechanicLogin() {
+      const code = prompt("🛠️ Enter Mechanic Login Passcode (Default: 1234) or registered 10-Digit Mobile Number:", "1234");
+      if (!code) return;
+      
+      if (code === "1234" || code === "9962" || code === "7540021997") {
+        switchTab('partner');
+        alert(`✅ Mechanic Console Unlocked!\nLogged in as: ${currentPartner.name}`);
+      } else if (code.length === 10) {
+        fetch(`/api/v1/partners/by-phone/${code}`)
+          .then(r => r.json())
+          .then(p => {
+            currentPartner = p;
+            updatePartnerUI(p);
+            switchTab('partner');
+            alert(`✅ Logged in as Mechanic: ${p.name} (+91 ${p.phone})`);
+          })
+          .catch(() => {
+            switchTab('partner');
+          });
+      } else {
+        alert("❌ Invalid Mechanic Code! Please check with app administrator.");
       }
     }
 
@@ -1213,41 +1301,28 @@
       location.href = location.pathname + '?sync=' + Date.now();
     }
 
-    // ================= TAB NAVIGATION =================
+    // ================= RESILIENT SCREEN SWITCHER =================
     function switchTab(tabName) {
-      document.getElementById('customerScreen').classList.add('hidden');
-      document.getElementById('trackingScreen').classList.add('hidden');
-      document.getElementById('partnerScreen').classList.add('hidden');
-      document.getElementById('adminScreen').classList.add('hidden');
-      document.getElementById('registerScreen').classList.add('hidden');
-
-      document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('text-swiggy', 'text-amber-400');
-        btn.classList.add('text-gray-400');
+      const screens = ['customerScreen', 'trackingScreen', 'partnerScreen', 'adminScreen'];
+      screens.forEach(s => {
+        const el = document.getElementById(s);
+        if (el) el.classList.add('hidden');
       });
 
       if (tabName === 'customer') {
-        document.getElementById('customerScreen').classList.remove('hidden');
-        document.getElementById('tab-customer').classList.add('text-swiggy');
-        document.getElementById('tab-customer').classList.remove('text-gray-400');
+        document.getElementById('customerScreen')?.classList.remove('hidden');
         loadLivePricing();
       } else if (tabName === 'partner') {
-        document.getElementById('partnerScreen').classList.remove('hidden');
-        document.getElementById('tab-partner').classList.add('text-swiggy');
-        document.getElementById('tab-partner').classList.remove('text-gray-400');
+        document.getElementById('partnerScreen')?.classList.remove('hidden');
         loadPartnerIncomingJobs();
         startPartnerJobListener();
       } else if (tabName === 'admin') {
-        document.getElementById('adminScreen').classList.remove('hidden');
-        document.getElementById('tab-admin').classList.add('text-amber-400');
-        document.getElementById('tab-admin').classList.remove('text-gray-400');
+        document.getElementById('adminScreen')?.classList.remove('hidden');
         loadLivePricing();
         loadSavedBankDetails();
         loadAdminPartners();
-      } else if (tabName === 'register') {
-        document.getElementById('registerScreen').classList.remove('hidden');
-        document.getElementById('tab-register').classList.add('text-swiggy');
-        document.getElementById('tab-register').classList.remove('text-gray-400');
+      } else if (tabName === 'tracking') {
+        document.getElementById('trackingScreen')?.classList.remove('hidden');
       }
     }
 
@@ -1549,16 +1624,11 @@
     }
 
     function openActiveTracking() {
-      document.getElementById('customerScreen').classList.add('hidden');
-      document.getElementById('partnerScreen').classList.add('hidden');
-      document.getElementById('adminScreen').classList.add('hidden');
-      document.getElementById('registerScreen').classList.add('hidden');
-      document.getElementById('trackingScreen').classList.remove('hidden');
+      switchTab('tracking');
     }
 
     function showTrackingScreen() {
-      document.getElementById('customerScreen').classList.add('hidden');
-      document.getElementById('trackingScreen').classList.remove('hidden');
+      switchTab('tracking');
     }
 
     function resolveCurrentJob() {
@@ -1578,10 +1648,9 @@
       if (liveTrackingWs) {
         try { liveTrackingWs.close(); } catch(e){}
       }
-      document.getElementById('trackingScreen').classList.add('hidden');
-      document.getElementById('customerScreen').classList.remove('hidden');
-      document.getElementById('matchingRadar').classList.remove('hidden');
-      document.getElementById('partnerCard').classList.add('hidden');
+      switchTab('customer');
+      document.getElementById('matchingRadar')?.classList.remove('hidden');
+      document.getElementById('partnerCard')?.classList.add('hidden');
     }
 
     // ================= LIVE TRACKING ENGINE =================
@@ -1601,7 +1670,7 @@
       pBar.classList.add('bg-swiggy');
       stepLabel.innerText = 'Step 1/4: High-Priority Push Alert Sent';
       stepPercent.innerText = '25%';
-      desc.innerText = 'Searching and notifying nearest verified mechanic (Jegan) in Malumichampatti...';
+      desc.innerText = 'Searching and notifying nearest verified mechanic in Malumichampatti...';
 
       document.getElementById('trackingHeader').innerText = 'Matching Partner...';
       document.getElementById('etaBadge').className = 'bg-swiggy/20 text-swiggy px-3 py-1 rounded-full text-xs font-black animate-pulse';
@@ -1622,8 +1691,8 @@
         document.getElementById('partnerCard').classList.remove('hidden');
 
         const partner = data.partner || data.assigned_partner || {};
-        const pName = partner.name || 'Jegan (Verified Partner)';
-        const pPhone = partner.phone || '7540021997';
+        const pName = partner.name || currentPartner.name || 'Verified Roadside Mechanic';
+        const pPhone = partner.phone || currentPartner.phone || '7540021997';
 
         document.getElementById('assignedPartnerName').innerText = pName;
         document.getElementById('assignedPartnerPhone').innerHTML = `Phone: <a href="tel:${pPhone}" class="text-emerald underline font-mono font-bold">${pPhone}</a>`;
@@ -1644,7 +1713,7 @@
         if (waBtn) {
           const waText = encodeURIComponent(`🚨 அவசர உதவி தேவை (Roadside Emergency)!\nஇடம்: ${customerLandmark}\nVisiting Fee: ₹${fee}\nGoogle Maps வழி: ${gmapsUrl}\nAccept செய்ய லிங்க்: ${acceptUrl}`);
           waBtn.href = `https://wa.me/91${pPhone}?text=${waText}`;
-          waBtn.innerHTML = `<i class="fa-brands fa-whatsapp text-sm"></i> WhatsApp ${pName.split(' ')[0]}`;
+          waBtn.innerHTML = `<i class="fa-brands fa-whatsapp text-sm"></i> WhatsApp Mechanic`;
         }
 
         // Direct SMS link with live navigation link
