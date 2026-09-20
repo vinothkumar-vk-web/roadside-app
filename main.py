@@ -295,6 +295,21 @@ async def create_assistance_request(payload: ServiceRequestCreate, bg_tasks: Bac
     # Launch non-blocking 4-step escalation loop
     bg_tasks.add_task(escalation_engine.start_matching_and_escalation, req.id)
 
+    # Broadcast instant emergency siren alert to all online partner consoles
+    st_str = req.service_type.value if hasattr(req.service_type, 'value') else str(req.service_type)
+    bg_tasks.add_task(ws_manager.broadcast_all_partners, {
+        "type": "NEW_JOB_ALERT",
+        "id": req.id,
+        "request_id": req.id,
+        "service_type": st_str,
+        "customer_phone": req.customer_phone,
+        "landmark": req.landmark,
+        "problem_description": req.problem_description,
+        "latitude": req.customer_latitude,
+        "longitude": req.customer_longitude,
+        "status": "requested"
+    })
+
     return {
         "request_id": req.id,
         "status": req.status.value,
@@ -340,7 +355,7 @@ async def respond_to_request(request_id: str, partner_id: str, accept: bool, db:
             "partner": {
                 "id": partner.id if partner else partner_id,
                 "name": partner.full_name if partner else "Verified Mechanic",
-                "phone": partner.phone_number if partner else "7540021997",
+                "phone": partner.phone_number if partner else "",
                 "rating": partner.rating if partner else 5.0,
                 "photo_url": partner.photo_url if partner else None
             }
@@ -407,10 +422,19 @@ async def web_accept_request(request_id: str, partner_id: str = "8d62b3cc-1b72-4
 
     p_res = await db.execute(select(Partner).where(Partner.id == partner_id))
     partner = p_res.scalars().first()
-    partner_name = partner.full_name if partner else "Jegan"
+    if not partner and req.assigned_partner_id:
+        p_res = await db.execute(select(Partner).where(Partner.id == req.assigned_partner_id))
+        partner = p_res.scalars().first()
+    if not partner:
+        p_res = await db.execute(select(Partner).where(Partner.verification_status == VerificationStatus.APPROVED).limit(1))
+        partner = p_res.scalars().first()
+
+    partner_name = partner.full_name if partner else "Verified Mechanic"
+    partner_phone = partner.phone_number if partner else ""
+    pid = partner.id if partner else partner_id
 
     req.status = RequestStatus.ACCEPTED
-    req.assigned_partner_id = partner_id
+    req.assigned_partner_id = pid
     await db.commit()
 
     # Broadcast to customer live tracking!
@@ -420,10 +444,10 @@ async def web_accept_request(request_id: str, partner_id: str = "8d62b3cc-1b72-4
         "status": "accepted",
         "eta_minutes": 10,
         "partner": {
-            "id": partner_id,
+            "id": pid,
             "name": partner_name,
-            "phone": partner.phone_number if partner else "7540021997",
-            "rating": 5.0
+            "phone": partner_phone,
+            "rating": partner.rating if partner else 5.0
         }
     })
 
@@ -480,7 +504,7 @@ async def mark_reached_spot(request_id: str, db: AsyncSession = Depends(get_db))
     await db.commit()
 
     partner_name = "Your Mechanic"
-    partner_phone = "7540021997"
+    partner_phone = ""
     if req.assigned_partner_id:
         p_res = await db.execute(select(Partner).where(Partner.id == req.assigned_partner_id))
         p = p_res.scalars().first()
@@ -610,12 +634,16 @@ async def exotel_ivr_callback(Digits: Optional[str] = None, CustomField: Optiona
             req.status = RequestStatus.ACCEPTED
             req.assigned_partner_id = partner_id
             await db.commit()
+            p_res = await db.execute(select(Partner).where(Partner.id == partner_id))
+            p = p_res.scalars().first()
+            p_name = p.full_name if p else "Verified Mechanic"
+            p_phone = p.phone_number if p else ""
             await ws_manager.broadcast_request_update(req.id, {
                 "type": "REQUEST_ACCEPTED",
                 "request_id": req.id,
                 "status": "accepted",
                 "eta_minutes": 10,
-                "partner": {"id": partner_id, "name": "Jegan", "phone": "7540021997"}
+                "partner": {"id": partner_id, "name": p_name, "phone": p_phone}
             })
         return {"status": "accepted", "message": "Partner accepted via IVR keypress 1"}
     else:

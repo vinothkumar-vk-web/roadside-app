@@ -65,5 +65,18 @@ class RealtimeConnectionManager:
                 self.disconnect_partner(partner_id)
         return False
 
+    async def broadcast_all_partners(self, payload: dict):
+        """Broadcasts instant interactive alert to all connected partner consoles."""
+        message = json.dumps(payload)
+        dead = []
+        for pid, ws in list(self.partner_connections.items()):
+            try:
+                await ws.send_text(message)
+            except Exception:
+                dead.append(pid)
+        for pid in dead:
+            self.disconnect_partner(pid)
+
 # Global Singleton
 ws_manager = RealtimeConnectionManager()
+

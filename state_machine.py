@@ -98,7 +98,7 @@ class EscalationEngine:
                 "phone": partner.phone_number,
                 "rating": partner.rating or 5.0,
                 "photo_url": partner.photo_url
-            } if partner else None
+            } if (partner and req.status in (RequestStatus.ACCEPTED, RequestStatus.REACHED_SPOT, RequestStatus.COMPLETED)) else None
         }
         await ws_manager.broadcast_request_update(req.id, payload)
 
