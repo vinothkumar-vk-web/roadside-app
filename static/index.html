@@ -1,127 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Leaflet CSS & JS for Real-Time GPS Map -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
-    // ================= EMERGENCY AUDIO SIREN & LEAFLET MAP FUNCTIONS =================
-    function playEmergencySiren() {
-      try {
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        if (!AudioContext) return;
-        const ctx = new AudioContext();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(440, ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.3);
-        osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.6);
-        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.9);
-        gain.gain.setValueAtTime(0.35, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 1.2);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start();
-        osc.stop(ctx.currentTime + 1.2);
-      } catch(e) {
-        console.log('Audio siren error:', e);
-      }
-    }
-
-    let liveMap = null;
-    let customerMarker = null;
-    let mechanicMarker = null;
-    let routePolyline = null;
-
-    function initLeafletMap(custLat, custLng, partnerLat, partnerLng) {
-      if (typeof L === 'undefined') return;
-      const mapElem = document.getElementById('liveTrackingMap');
-      if (!mapElem) return;
-
-      const cLat = parseFloat(custLat) || 10.9167;
-      const cLng = parseFloat(custLng) || 76.9806;
-
-      if (!liveMap) {
-        liveMap = L.map('liveTrackingMap', { zoomControl: false }).setView([cLat, cLng], 14);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          maxZoom: 19,
-          attribution: '© OpenStreetMap'
-        }).addTo(liveMap);
-      } else {
-        liveMap.invalidateSize();
-      }
-
-      const redDot = L.divIcon({
-        className: 'custom-cust-dot',
-        html: `<div style="background-color:#EF4444; width:16px; height:16px; border-radius:50%; border:3px solid white; box-shadow:0 0 10px rgba(239,68,68,0.9);"></div>`,
-        iconSize: [16, 16],
-        iconAnchor: [8, 8]
-      });
-
-      const greenWrench = L.divIcon({
-        className: 'custom-partner-dot',
-        html: `<div style="background-color:#10B981; width:24px; height:24px; border-radius:50%; border:3px solid white; box-shadow:0 0 12px rgba(16,185,129,1); display:flex; align-items:center; justify-content:center; color:white; font-size:11px;"><i class="fa-solid fa-wrench"></i></div>`,
-        iconSize: [24, 24],
-        iconAnchor: [12, 12]
-      });
-
-      if (customerMarker) liveMap.removeLayer(customerMarker);
-      customerMarker = L.marker([cLat, cLng], { icon: redDot }).addTo(liveMap).bindPopup('<b>Breakdown Spot</b>');
-
-      if (partnerLat && partnerLng) {
-        const pLat = parseFloat(partnerLat);
-        const pLng = parseFloat(partnerLng);
-        if (mechanicMarker) liveMap.removeLayer(mechanicMarker);
-        mechanicMarker = L.marker([pLat, pLng], { icon: greenWrench }).addTo(liveMap).bindPopup('<b>Mechanic Live Location</b>');
-
-        if (routePolyline) liveMap.removeLayer(routePolyline);
-        routePolyline = L.polyline([[cLat, cLng], [pLat, pLng]], { color: '#3B82F6', weight: 4, opacity: 0.8, dashArray: '6, 8' }).addTo(liveMap);
-
-        const bounds = L.latLngBounds([[cLat, cLng], [pLat, pLng]]);
-        liveMap.fitBounds(bounds, { padding: [30, 30] });
-      }
-    }
-
-    function openUpiQrModal(fee) {
-      const upiId = "9962312573@pthdfc";
-      const payeeName = "Vinoth Kumar";
-      const amt = fee || 199;
-      const upiUri = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(payeeName)}&am=${amt}&cu=INR&tn=${encodeURIComponent('Visiting Fee')}`;
-      
-      const qrImg = document.getElementById('upiQrImage');
-      if (qrImg) {
-        qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(upiUri)}`;
-      }
-      const amtElem = document.getElementById('upiModalAmount');
-      if (amtElem) amtElem.innerText = `₹${amt}`;
-      
-      const gBtn = document.getElementById('gpayDirectBtn');
-      if (gBtn) gBtn.href = upiUri;
-      const pBtn = document.getElementById('phonepeDirectBtn');
-      if (pBtn) pBtn.href = upiUri;
-
-      document.getElementById('upiQrModal')?.classList.remove('hidden');
-    }
-
-    function closeUpiQrModal() {
-      document.getElementById('upiQrModal')?.classList.add('hidden');
-    }
-
-    function copyUpiId(id) {
-      navigator.clipboard.writeText(id).then(() => {
-        alert("✅ UPI ID Copied: " + id + "
-Paste in GPay / PhonePe to pay!");
-      }).catch(() => {
-        alert("UPI ID: " + id);
-      });
-    }
-
-    function confirmUpiPaymentCompleted() {
-      closeUpiQrModal();
-      executeBookingCreation('Direct UPI (Vinoth Kumar - 9962312573@pthdfc)');
-    }
-
-</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Roadside Assistance - Malumichampatti</title>
@@ -140,7 +19,7 @@ Paste in GPay / PhonePe to pay!");
   <!-- Instant Cache-Buster & PWA Purge on Version Update -->
   <script>
     (function() {
-      const APP_VERSION = 'v6.0-prod-stable';
+      const APP_VERSION = 'v6.1-mobile-orange-fix';
       if (localStorage.getItem('installed_app_ver') !== APP_VERSION) {
         localStorage.setItem('installed_app_ver', APP_VERSION);
         if ('caches' in window) {
@@ -152,371 +31,17 @@ Paste in GPay / PhonePe to pay!");
           });
         }
         // Force refresh to reload newest HTML from server
-        if (location.search.indexOf('v=6.0') === -1) {
-          location.replace(location.pathname + '?v=6.0');
+        if (location.search.indexOf('v=6.1') === -1) {
+          location.replace(location.pathname + '?v=6.1');
         }
       }
     })();
-  
-    // ================= EMERGENCY AUDIO SIREN & LEAFLET MAP FUNCTIONS =================
-    function playEmergencySiren() {
-      try {
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        if (!AudioContext) return;
-        const ctx = new AudioContext();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(440, ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.3);
-        osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.6);
-        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.9);
-        gain.gain.setValueAtTime(0.35, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 1.2);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start();
-        osc.stop(ctx.currentTime + 1.2);
-      } catch(e) {
-        console.log('Audio siren error:', e);
-      }
-    }
-
-    let liveMap = null;
-    let customerMarker = null;
-    let mechanicMarker = null;
-    let routePolyline = null;
-
-    function initLeafletMap(custLat, custLng, partnerLat, partnerLng) {
-      if (typeof L === 'undefined') return;
-      const mapElem = document.getElementById('liveTrackingMap');
-      if (!mapElem) return;
-
-      const cLat = parseFloat(custLat) || 10.9167;
-      const cLng = parseFloat(custLng) || 76.9806;
-
-      if (!liveMap) {
-        liveMap = L.map('liveTrackingMap', { zoomControl: false }).setView([cLat, cLng], 14);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          maxZoom: 19,
-          attribution: '© OpenStreetMap'
-        }).addTo(liveMap);
-      } else {
-        liveMap.invalidateSize();
-      }
-
-      const redDot = L.divIcon({
-        className: 'custom-cust-dot',
-        html: `<div style="background-color:#EF4444; width:16px; height:16px; border-radius:50%; border:3px solid white; box-shadow:0 0 10px rgba(239,68,68,0.9);"></div>`,
-        iconSize: [16, 16],
-        iconAnchor: [8, 8]
-      });
-
-      const greenWrench = L.divIcon({
-        className: 'custom-partner-dot',
-        html: `<div style="background-color:#10B981; width:24px; height:24px; border-radius:50%; border:3px solid white; box-shadow:0 0 12px rgba(16,185,129,1); display:flex; align-items:center; justify-content:center; color:white; font-size:11px;"><i class="fa-solid fa-wrench"></i></div>`,
-        iconSize: [24, 24],
-        iconAnchor: [12, 12]
-      });
-
-      if (customerMarker) liveMap.removeLayer(customerMarker);
-      customerMarker = L.marker([cLat, cLng], { icon: redDot }).addTo(liveMap).bindPopup('<b>Breakdown Spot</b>');
-
-      if (partnerLat && partnerLng) {
-        const pLat = parseFloat(partnerLat);
-        const pLng = parseFloat(partnerLng);
-        if (mechanicMarker) liveMap.removeLayer(mechanicMarker);
-        mechanicMarker = L.marker([pLat, pLng], { icon: greenWrench }).addTo(liveMap).bindPopup('<b>Mechanic Live Location</b>');
-
-        if (routePolyline) liveMap.removeLayer(routePolyline);
-        routePolyline = L.polyline([[cLat, cLng], [pLat, pLng]], { color: '#3B82F6', weight: 4, opacity: 0.8, dashArray: '6, 8' }).addTo(liveMap);
-
-        const bounds = L.latLngBounds([[cLat, cLng], [pLat, pLng]]);
-        liveMap.fitBounds(bounds, { padding: [30, 30] });
-      }
-    }
-
-    function openUpiQrModal(fee) {
-      const upiId = "9962312573@pthdfc";
-      const payeeName = "Vinoth Kumar";
-      const amt = fee || 199;
-      const upiUri = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(payeeName)}&am=${amt}&cu=INR&tn=${encodeURIComponent('Visiting Fee')}`;
-      
-      const qrImg = document.getElementById('upiQrImage');
-      if (qrImg) {
-        qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(upiUri)}`;
-      }
-      const amtElem = document.getElementById('upiModalAmount');
-      if (amtElem) amtElem.innerText = `₹${amt}`;
-      
-      const gBtn = document.getElementById('gpayDirectBtn');
-      if (gBtn) gBtn.href = upiUri;
-      const pBtn = document.getElementById('phonepeDirectBtn');
-      if (pBtn) pBtn.href = upiUri;
-
-      document.getElementById('upiQrModal')?.classList.remove('hidden');
-    }
-
-    function closeUpiQrModal() {
-      document.getElementById('upiQrModal')?.classList.add('hidden');
-    }
-
-    function copyUpiId(id) {
-      navigator.clipboard.writeText(id).then(() => {
-        alert("✅ UPI ID Copied: " + id + "
-Paste in GPay / PhonePe to pay!");
-      }).catch(() => {
-        alert("UPI ID: " + id);
-      });
-    }
-
-    function confirmUpiPaymentCompleted() {
-      closeUpiQrModal();
-      executeBookingCreation('Direct UPI (Vinoth Kumar - 9962312573@pthdfc)');
-    }
-
-</script>
+  </script>
 
   <!-- Tailwind CSS & FontAwesome & Razorpay -->
-  <script src="https://cdn.tailwindcss.com">
-    // ================= EMERGENCY AUDIO SIREN & LEAFLET MAP FUNCTIONS =================
-    function playEmergencySiren() {
-      try {
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        if (!AudioContext) return;
-        const ctx = new AudioContext();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(440, ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.3);
-        osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.6);
-        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.9);
-        gain.gain.setValueAtTime(0.35, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 1.2);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start();
-        osc.stop(ctx.currentTime + 1.2);
-      } catch(e) {
-        console.log('Audio siren error:', e);
-      }
-    }
-
-    let liveMap = null;
-    let customerMarker = null;
-    let mechanicMarker = null;
-    let routePolyline = null;
-
-    function initLeafletMap(custLat, custLng, partnerLat, partnerLng) {
-      if (typeof L === 'undefined') return;
-      const mapElem = document.getElementById('liveTrackingMap');
-      if (!mapElem) return;
-
-      const cLat = parseFloat(custLat) || 10.9167;
-      const cLng = parseFloat(custLng) || 76.9806;
-
-      if (!liveMap) {
-        liveMap = L.map('liveTrackingMap', { zoomControl: false }).setView([cLat, cLng], 14);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          maxZoom: 19,
-          attribution: '© OpenStreetMap'
-        }).addTo(liveMap);
-      } else {
-        liveMap.invalidateSize();
-      }
-
-      const redDot = L.divIcon({
-        className: 'custom-cust-dot',
-        html: `<div style="background-color:#EF4444; width:16px; height:16px; border-radius:50%; border:3px solid white; box-shadow:0 0 10px rgba(239,68,68,0.9);"></div>`,
-        iconSize: [16, 16],
-        iconAnchor: [8, 8]
-      });
-
-      const greenWrench = L.divIcon({
-        className: 'custom-partner-dot',
-        html: `<div style="background-color:#10B981; width:24px; height:24px; border-radius:50%; border:3px solid white; box-shadow:0 0 12px rgba(16,185,129,1); display:flex; align-items:center; justify-content:center; color:white; font-size:11px;"><i class="fa-solid fa-wrench"></i></div>`,
-        iconSize: [24, 24],
-        iconAnchor: [12, 12]
-      });
-
-      if (customerMarker) liveMap.removeLayer(customerMarker);
-      customerMarker = L.marker([cLat, cLng], { icon: redDot }).addTo(liveMap).bindPopup('<b>Breakdown Spot</b>');
-
-      if (partnerLat && partnerLng) {
-        const pLat = parseFloat(partnerLat);
-        const pLng = parseFloat(partnerLng);
-        if (mechanicMarker) liveMap.removeLayer(mechanicMarker);
-        mechanicMarker = L.marker([pLat, pLng], { icon: greenWrench }).addTo(liveMap).bindPopup('<b>Mechanic Live Location</b>');
-
-        if (routePolyline) liveMap.removeLayer(routePolyline);
-        routePolyline = L.polyline([[cLat, cLng], [pLat, pLng]], { color: '#3B82F6', weight: 4, opacity: 0.8, dashArray: '6, 8' }).addTo(liveMap);
-
-        const bounds = L.latLngBounds([[cLat, cLng], [pLat, pLng]]);
-        liveMap.fitBounds(bounds, { padding: [30, 30] });
-      }
-    }
-
-    function openUpiQrModal(fee) {
-      const upiId = "9962312573@pthdfc";
-      const payeeName = "Vinoth Kumar";
-      const amt = fee || 199;
-      const upiUri = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(payeeName)}&am=${amt}&cu=INR&tn=${encodeURIComponent('Visiting Fee')}`;
-      
-      const qrImg = document.getElementById('upiQrImage');
-      if (qrImg) {
-        qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(upiUri)}`;
-      }
-      const amtElem = document.getElementById('upiModalAmount');
-      if (amtElem) amtElem.innerText = `₹${amt}`;
-      
-      const gBtn = document.getElementById('gpayDirectBtn');
-      if (gBtn) gBtn.href = upiUri;
-      const pBtn = document.getElementById('phonepeDirectBtn');
-      if (pBtn) pBtn.href = upiUri;
-
-      document.getElementById('upiQrModal')?.classList.remove('hidden');
-    }
-
-    function closeUpiQrModal() {
-      document.getElementById('upiQrModal')?.classList.add('hidden');
-    }
-
-    function copyUpiId(id) {
-      navigator.clipboard.writeText(id).then(() => {
-        alert("✅ UPI ID Copied: " + id + "
-Paste in GPay / PhonePe to pay!");
-      }).catch(() => {
-        alert("UPI ID: " + id);
-      });
-    }
-
-    function confirmUpiPaymentCompleted() {
-      closeUpiQrModal();
-      executeBookingCreation('Direct UPI (Vinoth Kumar - 9962312573@pthdfc)');
-    }
-
-</script>
+  <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <script src="https://checkout.razorpay.com/v1/checkout.js">
-    // ================= EMERGENCY AUDIO SIREN & LEAFLET MAP FUNCTIONS =================
-    function playEmergencySiren() {
-      try {
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        if (!AudioContext) return;
-        const ctx = new AudioContext();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(440, ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.3);
-        osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.6);
-        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.9);
-        gain.gain.setValueAtTime(0.35, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 1.2);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start();
-        osc.stop(ctx.currentTime + 1.2);
-      } catch(e) {
-        console.log('Audio siren error:', e);
-      }
-    }
-
-    let liveMap = null;
-    let customerMarker = null;
-    let mechanicMarker = null;
-    let routePolyline = null;
-
-    function initLeafletMap(custLat, custLng, partnerLat, partnerLng) {
-      if (typeof L === 'undefined') return;
-      const mapElem = document.getElementById('liveTrackingMap');
-      if (!mapElem) return;
-
-      const cLat = parseFloat(custLat) || 10.9167;
-      const cLng = parseFloat(custLng) || 76.9806;
-
-      if (!liveMap) {
-        liveMap = L.map('liveTrackingMap', { zoomControl: false }).setView([cLat, cLng], 14);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          maxZoom: 19,
-          attribution: '© OpenStreetMap'
-        }).addTo(liveMap);
-      } else {
-        liveMap.invalidateSize();
-      }
-
-      const redDot = L.divIcon({
-        className: 'custom-cust-dot',
-        html: `<div style="background-color:#EF4444; width:16px; height:16px; border-radius:50%; border:3px solid white; box-shadow:0 0 10px rgba(239,68,68,0.9);"></div>`,
-        iconSize: [16, 16],
-        iconAnchor: [8, 8]
-      });
-
-      const greenWrench = L.divIcon({
-        className: 'custom-partner-dot',
-        html: `<div style="background-color:#10B981; width:24px; height:24px; border-radius:50%; border:3px solid white; box-shadow:0 0 12px rgba(16,185,129,1); display:flex; align-items:center; justify-content:center; color:white; font-size:11px;"><i class="fa-solid fa-wrench"></i></div>`,
-        iconSize: [24, 24],
-        iconAnchor: [12, 12]
-      });
-
-      if (customerMarker) liveMap.removeLayer(customerMarker);
-      customerMarker = L.marker([cLat, cLng], { icon: redDot }).addTo(liveMap).bindPopup('<b>Breakdown Spot</b>');
-
-      if (partnerLat && partnerLng) {
-        const pLat = parseFloat(partnerLat);
-        const pLng = parseFloat(partnerLng);
-        if (mechanicMarker) liveMap.removeLayer(mechanicMarker);
-        mechanicMarker = L.marker([pLat, pLng], { icon: greenWrench }).addTo(liveMap).bindPopup('<b>Mechanic Live Location</b>');
-
-        if (routePolyline) liveMap.removeLayer(routePolyline);
-        routePolyline = L.polyline([[cLat, cLng], [pLat, pLng]], { color: '#3B82F6', weight: 4, opacity: 0.8, dashArray: '6, 8' }).addTo(liveMap);
-
-        const bounds = L.latLngBounds([[cLat, cLng], [pLat, pLng]]);
-        liveMap.fitBounds(bounds, { padding: [30, 30] });
-      }
-    }
-
-    function openUpiQrModal(fee) {
-      const upiId = "9962312573@pthdfc";
-      const payeeName = "Vinoth Kumar";
-      const amt = fee || 199;
-      const upiUri = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(payeeName)}&am=${amt}&cu=INR&tn=${encodeURIComponent('Visiting Fee')}`;
-      
-      const qrImg = document.getElementById('upiQrImage');
-      if (qrImg) {
-        qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(upiUri)}`;
-      }
-      const amtElem = document.getElementById('upiModalAmount');
-      if (amtElem) amtElem.innerText = `₹${amt}`;
-      
-      const gBtn = document.getElementById('gpayDirectBtn');
-      if (gBtn) gBtn.href = upiUri;
-      const pBtn = document.getElementById('phonepeDirectBtn');
-      if (pBtn) pBtn.href = upiUri;
-
-      document.getElementById('upiQrModal')?.classList.remove('hidden');
-    }
-
-    function closeUpiQrModal() {
-      document.getElementById('upiQrModal')?.classList.add('hidden');
-    }
-
-    function copyUpiId(id) {
-      navigator.clipboard.writeText(id).then(() => {
-        alert("✅ UPI ID Copied: " + id + "
-Paste in GPay / PhonePe to pay!");
-      }).catch(() => {
-        alert("UPI ID: " + id);
-      });
-    }
-
-    function confirmUpiPaymentCompleted() {
-      closeUpiQrModal();
-      executeBookingCreation('Direct UPI (Vinoth Kumar - 9962312573@pthdfc)');
-    }
-
-</script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -530,125 +55,7 @@ Paste in GPay / PhonePe to pay!");
         }
       }
     }
-  
-    // ================= EMERGENCY AUDIO SIREN & LEAFLET MAP FUNCTIONS =================
-    function playEmergencySiren() {
-      try {
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        if (!AudioContext) return;
-        const ctx = new AudioContext();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(440, ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.3);
-        osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.6);
-        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.9);
-        gain.gain.setValueAtTime(0.35, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 1.2);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start();
-        osc.stop(ctx.currentTime + 1.2);
-      } catch(e) {
-        console.log('Audio siren error:', e);
-      }
-    }
-
-    let liveMap = null;
-    let customerMarker = null;
-    let mechanicMarker = null;
-    let routePolyline = null;
-
-    function initLeafletMap(custLat, custLng, partnerLat, partnerLng) {
-      if (typeof L === 'undefined') return;
-      const mapElem = document.getElementById('liveTrackingMap');
-      if (!mapElem) return;
-
-      const cLat = parseFloat(custLat) || 10.9167;
-      const cLng = parseFloat(custLng) || 76.9806;
-
-      if (!liveMap) {
-        liveMap = L.map('liveTrackingMap', { zoomControl: false }).setView([cLat, cLng], 14);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          maxZoom: 19,
-          attribution: '© OpenStreetMap'
-        }).addTo(liveMap);
-      } else {
-        liveMap.invalidateSize();
-      }
-
-      const redDot = L.divIcon({
-        className: 'custom-cust-dot',
-        html: `<div style="background-color:#EF4444; width:16px; height:16px; border-radius:50%; border:3px solid white; box-shadow:0 0 10px rgba(239,68,68,0.9);"></div>`,
-        iconSize: [16, 16],
-        iconAnchor: [8, 8]
-      });
-
-      const greenWrench = L.divIcon({
-        className: 'custom-partner-dot',
-        html: `<div style="background-color:#10B981; width:24px; height:24px; border-radius:50%; border:3px solid white; box-shadow:0 0 12px rgba(16,185,129,1); display:flex; align-items:center; justify-content:center; color:white; font-size:11px;"><i class="fa-solid fa-wrench"></i></div>`,
-        iconSize: [24, 24],
-        iconAnchor: [12, 12]
-      });
-
-      if (customerMarker) liveMap.removeLayer(customerMarker);
-      customerMarker = L.marker([cLat, cLng], { icon: redDot }).addTo(liveMap).bindPopup('<b>Breakdown Spot</b>');
-
-      if (partnerLat && partnerLng) {
-        const pLat = parseFloat(partnerLat);
-        const pLng = parseFloat(partnerLng);
-        if (mechanicMarker) liveMap.removeLayer(mechanicMarker);
-        mechanicMarker = L.marker([pLat, pLng], { icon: greenWrench }).addTo(liveMap).bindPopup('<b>Mechanic Live Location</b>');
-
-        if (routePolyline) liveMap.removeLayer(routePolyline);
-        routePolyline = L.polyline([[cLat, cLng], [pLat, pLng]], { color: '#3B82F6', weight: 4, opacity: 0.8, dashArray: '6, 8' }).addTo(liveMap);
-
-        const bounds = L.latLngBounds([[cLat, cLng], [pLat, pLng]]);
-        liveMap.fitBounds(bounds, { padding: [30, 30] });
-      }
-    }
-
-    function openUpiQrModal(fee) {
-      const upiId = "9962312573@pthdfc";
-      const payeeName = "Vinoth Kumar";
-      const amt = fee || 199;
-      const upiUri = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(payeeName)}&am=${amt}&cu=INR&tn=${encodeURIComponent('Visiting Fee')}`;
-      
-      const qrImg = document.getElementById('upiQrImage');
-      if (qrImg) {
-        qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(upiUri)}`;
-      }
-      const amtElem = document.getElementById('upiModalAmount');
-      if (amtElem) amtElem.innerText = `₹${amt}`;
-      
-      const gBtn = document.getElementById('gpayDirectBtn');
-      if (gBtn) gBtn.href = upiUri;
-      const pBtn = document.getElementById('phonepeDirectBtn');
-      if (pBtn) pBtn.href = upiUri;
-
-      document.getElementById('upiQrModal')?.classList.remove('hidden');
-    }
-
-    function closeUpiQrModal() {
-      document.getElementById('upiQrModal')?.classList.add('hidden');
-    }
-
-    function copyUpiId(id) {
-      navigator.clipboard.writeText(id).then(() => {
-        alert("✅ UPI ID Copied: " + id + "
-Paste in GPay / PhonePe to pay!");
-      }).catch(() => {
-        alert("UPI ID: " + id);
-      });
-    }
-
-    function confirmUpiPaymentCompleted() {
-      closeUpiQrModal();
-      executeBookingCreation('Direct UPI (Vinoth Kumar - 9962312573@pthdfc)');
-    }
-
-</script>
+  </script>
   <style>
     /* Native Mobile App Touch and Scrolling */
     html, body {
@@ -675,6 +82,9 @@ Paste in GPay / PhonePe to pay!");
     .animate-pulse-slow { animation: pulse-slow 2s infinite ease-in-out; }
     ::-webkit-scrollbar { display: none; }
   </style>
+  <!-- Leaflet CSS & JS for Real-Time GPS Map -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body class="flex flex-col min-h-screen max-w-lg mx-auto bg-darkbg antialiased">
 
@@ -694,35 +104,34 @@ Paste in GPay / PhonePe to pay!");
     </button>
   </div>
 
-  <!-- Real Native App Header (Uses user's own status bar at the top) -->
-  <header class="safe-top bg-darkbg/95 backdrop-blur px-4 py-2.5 border-b border-gray-800/80 flex items-center justify-between shrink-0 sticky top-0 z-40">
-    <div class="flex items-center gap-2.5">
-      <div class="w-9 h-9 rounded-xl bg-swiggy/20 flex items-center justify-center text-swiggy text-base">
+  <!-- Sleek Mobile Native App Header (Ultra Responsive, No Overlaps) -->
+  <header class="safe-top bg-darkbg/95 backdrop-blur px-3 py-2 border-b border-gray-800/80 flex items-center justify-between shrink-0 sticky top-0 z-40">
+    <div class="flex items-center gap-2">
+      <div class="w-8 h-8 rounded-xl bg-swiggy/20 flex items-center justify-center text-swiggy text-sm shadow">
         <i class="fa-solid fa-location-dot"></i>
       </div>
       <div>
-        <div class="flex items-center gap-1.5">
-          <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">PILOT ZONE</span>
-          <span class="w-1.5 h-1.5 rounded-full bg-emerald"></span>
+        <div class="flex items-center gap-1">
+          <span class="text-[9px] font-black text-swiggy uppercase tracking-wider">ROAD ASSIST</span>
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald animate-pulse"></span>
         </div>
-        <p class="text-sm font-black text-white flex items-center gap-1">
-          Malumichampatti, CBE <i class="fa-solid fa-chevron-down text-[10px] text-swiggy"></i>
+        <p class="text-xs font-black text-white flex items-center gap-1">
+          Malumichampatti <i class="fa-solid fa-chevron-down text-[9px] text-swiggy"></i>
         </p>
       </div>
     </div>
+    
+    <!-- Header Controls (Cleanly Aligned for Mobile Screens) -->
     <div class="flex items-center gap-1.5">
-      <button onclick="forceHardSync()" title="Force Cache Purge & Refresh" class="bg-cardbg border border-gray-700 hover:border-swiggy text-gray-300 w-8 h-8 rounded-full flex items-center justify-center text-xs active:rotate-180 transition-transform">
-        <i class="fa-solid fa-rotate text-swiggy"></i>
+      <button type="button" onclick="promptMechanicLogin()" title="Mechanic Console" class="bg-swiggy/20 border border-swiggy/40 text-swiggy hover:bg-swiggy hover:text-white px-2.5 py-1.5 rounded-xl flex items-center gap-1 text-[11px] font-black active:scale-95 transition shadow">
+        <i class="fa-solid fa-wrench text-[10px]"></i> Mechanic
       </button>
-      <button onclick="promptMechanicLogin()" title="Mechanic Console" class="bg-cardbg border border-gray-700 hover:border-swiggy text-gray-300 hover:text-swiggy px-2.5 py-1 rounded-full flex items-center gap-1 text-[11px] font-bold active:scale-95 transition">
-        <i class="fa-solid fa-wrench text-swiggy text-[10px]"></i> Mechanic
+      <button type="button" onclick="promptAdminLogin()" title="Admin Control (PIN 12345)" class="bg-darkbg border border-gray-700 hover:border-amber-400 text-amber-400 w-8 h-8 rounded-xl flex items-center justify-center text-xs active:scale-95 transition">
+        <i class="fa-solid fa-lock text-[11px]"></i>
       </button>
-      <button onclick="promptAdminLogin()" title="Owner Admin Access (PIN Required)" class="bg-cardbg border border-gray-700 hover:border-amber-400 text-gray-400 hover:text-amber-400 w-8 h-8 rounded-full flex items-center justify-center text-xs active:scale-95 transition">
-        <i class="fa-solid fa-lock text-[10px]"></i>
+      <button type="button" onclick="forceHardSync()" title="Refresh App" class="bg-darkbg border border-gray-700 hover:border-swiggy text-gray-300 w-8 h-8 rounded-xl flex items-center justify-center text-xs active:rotate-180 transition">
+        <i class="fa-solid fa-rotate text-swiggy text-[11px]"></i>
       </button>
-      <span class="bg-emerald/15 text-emerald border border-emerald/30 px-2 py-1 rounded-full text-[10px] font-black">
-        <i class="fa-solid fa-shield-halved mr-0.5"></i> LIVE
-      </span>
     </div>
   </header>
 
@@ -972,10 +381,10 @@ Paste in GPay / PhonePe to pay!");
       <!-- Assigned Mechanic Card -->
       
       <!-- Real-Time Interactive Leaflet Map -->
-      <div id="leafletMapContainer" class="w-full h-56 rounded-2xl overflow-hidden border border-emerald/30 shadow-xl relative my-3">
+      <div id="leafletMapContainer" class="w-full h-52 rounded-2xl overflow-hidden border border-swiggy/40 shadow-xl relative my-3">
         <div id="liveTrackingMap" class="w-full h-full bg-darkbg"></div>
-        <div class="absolute top-2 left-2 z-[1000] bg-darkbg/90 backdrop-blur-sm text-emerald text-[10px] font-black px-2.5 py-1 rounded-lg border border-emerald/40 flex items-center gap-1 shadow">
-          <i class="fa-solid fa-location-dot animate-bounce"></i> GPS LIVE TRACKER
+        <div class="absolute top-2 left-2 z-[1000] bg-darkbg/90 backdrop-blur-sm text-swiggy text-[10px] font-black px-2.5 py-1 rounded-lg border border-swiggy/40 flex items-center gap-1 shadow">
+          <i class="fa-solid fa-location-dot animate-pulse"></i> LIVE GPS MAP
         </div>
       </div>
 
@@ -2781,7 +2190,7 @@ Paste in GPay / PhonePe to pay!");
       }, 4 * 60 * 1000);
     };
   
-    // ================= EMERGENCY AUDIO SIREN & LEAFLET MAP FUNCTIONS =================
+    // ================= EMERGENCY SIREN, LEAFLET MAP & UPI PAYMENT FLOW =================
     function playEmergencySiren() {
       try {
         const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -2830,9 +2239,9 @@ Paste in GPay / PhonePe to pay!");
 
       const redDot = L.divIcon({
         className: 'custom-cust-dot',
-        html: `<div style="background-color:#EF4444; width:16px; height:16px; border-radius:50%; border:3px solid white; box-shadow:0 0 10px rgba(239,68,68,0.9);"></div>`,
-        iconSize: [16, 16],
-        iconAnchor: [8, 8]
+        html: `<div style="background-color:#FC8019; width:18px; height:18px; border-radius:50%; border:3px solid white; box-shadow:0 0 10px rgba(252,128,25,0.9);"></div>`,
+        iconSize: [18, 18],
+        iconAnchor: [9, 9]
       });
 
       const greenWrench = L.divIcon({
@@ -2843,7 +2252,7 @@ Paste in GPay / PhonePe to pay!");
       });
 
       if (customerMarker) liveMap.removeLayer(customerMarker);
-      customerMarker = L.marker([cLat, cLng], { icon: redDot }).addTo(liveMap).bindPopup('<b>Breakdown Spot</b>');
+      customerMarker = L.marker([cLat, cLng], { icon: redDot }).addTo(liveMap).bindPopup('<b>Your Breakdown Spot</b>');
 
       if (partnerLat && partnerLng) {
         const pLat = parseFloat(partnerLat);
@@ -2852,7 +2261,7 @@ Paste in GPay / PhonePe to pay!");
         mechanicMarker = L.marker([pLat, pLng], { icon: greenWrench }).addTo(liveMap).bindPopup('<b>Mechanic Live Location</b>');
 
         if (routePolyline) liveMap.removeLayer(routePolyline);
-        routePolyline = L.polyline([[cLat, cLng], [pLat, pLng]], { color: '#3B82F6', weight: 4, opacity: 0.8, dashArray: '6, 8' }).addTo(liveMap);
+        routePolyline = L.polyline([[cLat, cLng], [pLat, pLng]], { color: '#FC8019', weight: 4, opacity: 0.85, dashArray: '6, 8' }).addTo(liveMap);
 
         const bounds = L.latLngBounds([[cLat, cLng], [pLat, pLng]]);
         liveMap.fitBounds(bounds, { padding: [30, 30] });
@@ -2885,12 +2294,10 @@ Paste in GPay / PhonePe to pay!");
     }
 
     function copyUpiId(id) {
-      navigator.clipboard.writeText(id).then(() => {
-        alert("✅ UPI ID Copied: " + id + "
-Paste in GPay / PhonePe to pay!");
-      }).catch(() => {
-        alert("UPI ID: " + id);
-      });
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(id);
+      }
+      alert("✅ UPI ID Copied: " + id + "\nPaste in GPay / PhonePe to pay!");
     }
 
     function confirmUpiPaymentCompleted() {
@@ -2901,53 +2308,53 @@ Paste in GPay / PhonePe to pay!");
 </script>
 
   <!-- Dynamic UPI QR Code Scan & Pay Modal for Vinoth Kumar (9962312573@pthdfc) -->
-  <div id="upiQrModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-cardbg border-2 border-emerald/50 rounded-3xl p-5 max-w-sm w-full space-y-4 shadow-2xl relative text-center">
-      <button onclick="closeUpiQrModal()" class="absolute top-3 right-3 text-gray-400 hover:text-white text-lg w-8 h-8 rounded-full bg-darkbg flex items-center justify-center border border-gray-700">
+  <div id="upiQrModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-cardbg border-2 border-swiggy rounded-3xl p-5 max-w-sm w-full space-y-4 shadow-2xl relative text-center">
+      <button onclick="closeUpiQrModal()" class="absolute top-3 right-3 text-gray-400 hover:text-white text-lg w-8 h-8 rounded-full bg-darkbg flex items-center justify-center border border-gray-700 active:scale-95 transition">
         <i class="fa-solid fa-xmark"></i>
       </button>
       
       <div class="space-y-1">
-        <span class="bg-emerald/20 text-emerald text-[10px] font-black px-2.5 py-1 rounded-full border border-emerald/40 uppercase tracking-wider inline-block">
-          ⚡ Instant UPI Scan & Pay
+        <span class="bg-swiggy/20 text-swiggy text-[10px] font-black px-3 py-1 rounded-full border border-swiggy/40 uppercase tracking-wider inline-block">
+          ⚡ 100% Secure UPI Payment
         </span>
         <h3 class="font-black text-base text-white">Scan & Pay via Any UPI App</h3>
         <p class="text-xs text-gray-300">Google Pay • PhonePe • Paytm • BHIM</p>
       </div>
 
       <!-- Dynamic QR Code -->
-      <div class="bg-white p-3 rounded-2xl inline-block shadow-inner border-2 border-emerald/40">
-        <img id="upiQrImage" src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=upi://pay?pa=9962312573@pthdfc%26pn=Vinoth%20Kumar%26am=199%26cu=INR" alt="UPI QR Code" class="w-48 h-48 mx-auto">
+      <div class="bg-white p-3 rounded-2xl inline-block shadow-xl border-2 border-swiggy/40">
+        <img id="upiQrImage" src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=upi://pay?pa=9962312573@pthdfc%26pn=Vinoth%20Kumar%26am=199%26cu=INR" alt="UPI QR Code" class="w-48 h-48 mx-auto object-contain">
       </div>
 
-      <div class="bg-darkbg p-3 rounded-xl border border-gray-800 space-y-1.5 text-left">
-        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Payee & Account Details</p>
-        <p class="text-xs text-white font-bold flex justify-between">
-          <span class="text-gray-400">Payee Name:</span> <span class="text-emerald font-black">Vinoth Kumar</span>
-        </p>
+      <div class="bg-darkbg p-3.5 rounded-xl border border-gray-800 space-y-1.5 text-left">
+        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Payee Account Details</p>
+        <div class="flex items-center justify-between text-xs text-white font-bold">
+          <span class="text-gray-400">Payee Name:</span> <span class="text-swiggy font-black">Vinoth Kumar</span>
+        </div>
         <div class="flex items-center justify-between text-xs text-white font-bold pt-1 border-t border-gray-800/80">
           <span class="text-gray-400">UPI ID:</span> 
-          <span id="displayUpiId" class="text-swiggy font-mono font-black">9962312573@pthdfc</span>
-          <button onclick="copyUpiId('9962312573@pthdfc')" class="bg-swiggy/20 text-swiggy text-[10px] px-2 py-0.5 rounded font-bold hover:bg-swiggy/30 active:scale-95 transition">
+          <span id="displayUpiId" class="text-emerald font-mono font-black">9962312573@pthdfc</span>
+          <button type="button" onclick="copyUpiId('9962312573@pthdfc')" class="bg-swiggy text-white text-[10px] px-2.5 py-1 rounded-lg font-black hover:bg-orange-600 active:scale-95 transition shadow">
             <i class="fa-solid fa-copy"></i> Copy
           </button>
         </div>
-        <p class="text-xs text-white font-bold flex justify-between pt-1 border-t border-gray-800/80">
-          <span class="text-gray-400">Visiting Fee:</span> <span id="upiModalAmount" class="text-emerald font-black text-sm">₹199</span>
-        </p>
+        <div class="flex items-center justify-between text-xs text-white font-bold pt-1 border-t border-gray-800/80">
+          <span class="text-gray-400">Visiting Fee:</span> <span id="upiModalAmount" class="text-swiggy font-black text-sm">₹199</span>
+        </div>
       </div>
 
       <!-- Direct App Deep Link Buttons -->
       <div class="grid grid-cols-2 gap-2">
         <a id="gpayDirectBtn" href="#" class="bg-gray-800 hover:bg-gray-700 text-white font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 border border-gray-700 active:scale-95 transition">
-          <i class="fa-brands fa-google-pay text-emerald text-base"></i> Open GPay
+          <i class="fa-brands fa-google-pay text-emerald text-lg"></i> Open GPay
         </a>
         <a id="phonepeDirectBtn" href="#" class="bg-purple-900/40 hover:bg-purple-900/60 text-purple-200 font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 border border-purple-700/50 active:scale-95 transition">
-          <i class="fa-solid fa-wallet text-purple-400 text-xs"></i> Open PhonePe
+          <i class="fa-solid fa-wallet text-purple-400 text-xs"></i> PhonePe
         </a>
       </div>
 
-      <button onclick="confirmUpiPaymentCompleted()" class="w-full bg-emerald hover:bg-emerald/90 text-white font-black py-3.5 rounded-xl shadow-lg shadow-emerald/30 text-xs tracking-wider uppercase active:scale-95 transition">
+      <button type="button" onclick="confirmUpiPaymentCompleted()" class="w-full bg-swiggy hover:bg-orange-600 text-white font-black py-4 rounded-xl shadow-lg shadow-swiggy/30 text-xs tracking-wider uppercase active:scale-95 transition">
         <i class="fa-solid fa-circle-check text-sm mr-1"></i> Payment Completed — Dispatch Mechanic
       </button>
     </div>
