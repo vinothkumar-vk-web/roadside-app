@@ -19,7 +19,7 @@
   <!-- Instant Cache-Buster & PWA Purge on Version Update -->
   <script>
     (function() {
-      const APP_VERSION = 'v6.1-mobile-orange-fix';
+      const APP_VERSION = 'v6.2-modal-auth-fix';
       if (localStorage.getItem('installed_app_ver') !== APP_VERSION) {
         localStorage.setItem('installed_app_ver', APP_VERSION);
         if ('caches' in window) {
@@ -31,8 +31,8 @@
           });
         }
         // Force refresh to reload newest HTML from server
-        if (location.search.indexOf('v=6.1') === -1) {
-          location.replace(location.pathname + '?v=6.1');
+        if (location.search.indexOf('v=6.2') === -1) {
+          location.replace(location.pathname + '?v=6.2');
         }
       }
     })();
@@ -2357,6 +2357,71 @@
       <button type="button" onclick="confirmUpiPaymentCompleted()" class="w-full bg-swiggy hover:bg-orange-600 text-white font-black py-4 rounded-xl shadow-lg shadow-swiggy/30 text-xs tracking-wider uppercase active:scale-95 transition">
         <i class="fa-solid fa-circle-check text-sm mr-1"></i> Payment Completed — Dispatch Mechanic
       </button>
+    </div>
+  </div>
+
+
+  <!-- Master Admin PIN Authentication Modal (Replaces blocked window.prompt) -->
+  <div id="adminPinModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-cardbg border-2 border-amber-500/60 rounded-3xl p-5 max-w-sm w-full space-y-4 shadow-2xl relative text-center">
+      <button type="button" onclick="closeAdminPinModal()" class="absolute top-3 right-3 text-gray-400 hover:text-white text-lg w-8 h-8 rounded-full bg-darkbg flex items-center justify-center border border-gray-700 active:scale-95 transition">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      
+      <div class="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center mx-auto text-xl shadow">
+        <i class="fa-solid fa-user-shield"></i>
+      </div>
+
+      <div class="space-y-1">
+        <h3 class="font-black text-base text-white">Master Admin Access</h3>
+        <p class="text-xs text-gray-400">Enter 4-Digit Master PIN to open Control Panel</p>
+      </div>
+
+      <div class="space-y-2">
+        <input id="adminPinInput" type="password" maxlength="8" placeholder="Enter PIN (Default: 12345)" class="w-full bg-darkbg text-center text-lg font-mono font-black text-amber-400 py-3 px-4 rounded-xl border border-gray-700 outline-none focus:border-amber-400 transition tracking-widest" onkeyup="if(event.key==='Enter') submitAdminPin()">
+        <p id="adminPinError" class="hidden text-xs text-red-400 font-bold">❌ Access Denied: Invalid Master PIN!</p>
+      </div>
+
+      <div class="flex gap-2">
+        <button type="button" onclick="closeAdminPinModal()" class="flex-1 bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold py-3 rounded-xl text-xs active:scale-95 transition">
+          Cancel
+        </button>
+        <button type="button" onclick="submitAdminPin()" class="flex-1 bg-amber-500 hover:bg-amber-600 text-darkbg font-black py-3 rounded-xl text-xs active:scale-95 transition shadow-lg shadow-amber-500/20">
+          Unlock Panel
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mechanic Console Passcode Login Modal (Replaces blocked window.prompt) -->
+  <div id="mechanicLoginModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-cardbg border-2 border-swiggy/60 rounded-3xl p-5 max-w-sm w-full space-y-4 shadow-2xl relative text-center">
+      <button type="button" onclick="closeMechanicLoginModal()" class="absolute top-3 right-3 text-gray-400 hover:text-white text-lg w-8 h-8 rounded-full bg-darkbg flex items-center justify-center border border-gray-700 active:scale-95 transition">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="w-12 h-12 rounded-2xl bg-swiggy/20 text-swiggy flex items-center justify-center mx-auto text-xl shadow">
+        <i class="fa-solid fa-wrench"></i>
+      </div>
+
+      <div class="space-y-1">
+        <h3 class="font-black text-base text-white">Mechanic Console Login</h3>
+        <p class="text-xs text-gray-400">Enter Passcode (1234) or registered 10-digit mobile number</p>
+      </div>
+
+      <div class="space-y-2">
+        <input id="mechanicCodeInput" type="text" placeholder="Passcode (1234) or Mobile No" class="w-full bg-darkbg text-center text-sm font-mono font-bold text-swiggy py-3 px-4 rounded-xl border border-gray-700 outline-none focus:border-swiggy transition" onkeyup="if(event.key==='Enter') submitMechanicLogin()">
+        <p id="mechanicLoginError" class="hidden text-xs text-red-400 font-bold">❌ Mechanic profile not found!</p>
+      </div>
+
+      <div class="flex gap-2">
+        <button type="button" onclick="closeMechanicLoginModal()" class="flex-1 bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold py-3 rounded-xl text-xs active:scale-95 transition">
+          Cancel
+        </button>
+        <button type="button" onclick="submitMechanicLogin()" class="flex-1 bg-swiggy hover:bg-orange-600 text-white font-black py-3 rounded-xl text-xs active:scale-95 transition shadow-lg shadow-swiggy/30">
+          Open Console
+        </button>
+      </div>
     </div>
   </div>
 
